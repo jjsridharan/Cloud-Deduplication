@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Random;
 import java.util.Set;
+import java.io.Serializable;
 
 /**
  * Cuckoo Hash Map
@@ -26,7 +27,7 @@ import java.util.Set;
  */
 
 class CuckooHashMap<K, V> extends AbstractMap<K, V> implements
-		Map<K, V> {
+		Map<K, V>,Serializable {
 
 	static final int DEFAULT_INITIAL_CAPACITY = 16;
 	static final int MAXIMUM_CAPACITY = 1 << 30;

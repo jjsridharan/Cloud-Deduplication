@@ -3,10 +3,24 @@ import java.security.MessageDigest;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import com.google.json.Gson;
 
 public class ChunkHash
 {
-	CuckooHashMap<String,String> map=new CuckooHashMap<String,String>();
+	CuckooHashMap<String,String> map;
+	ChunkHash()
+	{
+		if(new File("dedupe.json").exists())
+		{
+			Gson gson=new Gson();
+			map = gson.fromJson(reader, CuckooHashMap.class);
+		}
+		else
+		{
+			map=new CuckooHashMap<String,String>();
+		}
+	}
+	
 	public static byte[] getChecksum(String file)
 	{
 		try
@@ -48,21 +62,11 @@ public class ChunkHash
 		File[] files= new File(path).listFiles();
 		for(File file :files)
 		{
-			if(file.isFile()){
-			String hash=getHash(path+file.getName());
-			System.out.println(path+file.getName());
-			if(map.get(hash)==null)
+			if(file.isFile())
 			{
-				map.put(hash,path+file.getName());
+				String hash=getHash(path+file.getName());
+				System.out.println(path+file.getName());
 			}
-			else
-			{
-				file.delete();
-				Path existingFilePath = Paths.get(map.get(hash));
-    				Path symLinkPath = Paths.get(path+file.getName());
-				Files.createSymbolicLink(symLinkPath,existingFilePath.toAbsolutePath());
-			}
-}
 			else
 			{
 				if(!((file.getName()).equals("..") || (file.getName()).equals(".")))
