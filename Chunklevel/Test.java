@@ -1,33 +1,24 @@
 import java.io.*;
-import com.google.gson.Gson;
+import java.security.MessageDigest;
+//import com.google.gson.Gson;
 public class Test
 {
 	
-	public static void main(String[] args)
+	public static void main(String[] args) throws Exception
 	{
-		Gson gson=new Gson();
-		CuckooHashMap<String,String> map=new CuckooHashMap<String,String>();
-		map.put("Hello","put");
-		try (FileWriter writer = new FileWriter("staff.json")) {
-
-            gson.toJson(map, writer);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-	try (Reader reader = new FileReader("staff.json")) {
-
-			// Convert JSON to Java Object
-            CuckooHashMap<String,String> map1 = gson.fromJson(reader, CuckooHashMap.class);
-            System.out.println(map1.get("Hello"));
-
-			// Convert JSON to JsonElement, and later to String
-            /*JsonElement json = gson.fromJson(reader, JsonElement.class);
-            String jsonInString = gson.toJson(json);
-            System.out.println(jsonInString);*/
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+		InputStream fis=new FileInputStream("test.txt");
+		byte[] b=new byte[4194304];
+			
+		int numbytes;
+		
+			do
+			{
+				MessageDigest mesdigest=MessageDigest.getInstance("MD5");
+				numbytes=fis.read(b);
+		                if(numbytes>0)
+					mesdigest.update(b,0,numbytes);
+				System.out.println(new String(b));
+			}while(numbytes!=-1);
+			fis.close();
 	}
 }
