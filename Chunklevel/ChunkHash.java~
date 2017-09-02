@@ -41,6 +41,22 @@ public class ChunkHash
 		if (pos == -1) return str;
 		return str.substring(0, pos);
     	}
+	public static String ConvertFormat(int numbytes,byte[] b)
+	{
+		int length=0,cp=numbytes;
+		while(cp!=0)
+		{
+			length++;
+			cp/=10;
+		}
+		StringBuilder result=new StringBuilder();
+		for(int i=0;i<7-length;i++)
+		{
+			result.append("0");
+			System.out.println(result);
+		}
+		return result.toString()+String.valueOf(numbytes)+new String(b);
+	}
 	public static void getChecksum(String file,String metapath)
 	{
 		try
@@ -58,13 +74,15 @@ public class ChunkHash
 				MessageDigest mesdigest=MessageDigest.getInstance("MD5");
 				numbytes=fis.read(b);
 		                if(numbytes>0)
+				{	
 					mesdigest.update(b,0,numbytes);
-				hashvalue=getHash(mesdigest.digest());
-				bw.write(hashvalue);
-				String content=new String(b);
-				if(map.get(hashvalue)==null)
-				{
-					map.put(hashvalue,content);
+					hashvalue=getHash(mesdigest.digest());
+					bw.write(hashvalue);
+					System.out.println(hashvalue.length());
+					if(map.get(hashvalue)==null)
+					{						
+						map.put(hashvalue,ConvertFormat(numbytes,b));
+					}
 				}
 			}while(numbytes!=-1);
 			fis.close();
@@ -132,13 +150,62 @@ public class ChunkHash
             	}
 		fos.close();
 		gis.close();
-		File f=new File("dedupe.txt");
-		f.delete();
+	}
+	public static int getNumberBytes(String index)
+	{
+		int length=index.length();
+		boolean flag=false;
+		StringBuilder ans=new StringBuilder("");
+		for(int i=0;i<length;i++)
+		{
+			if(index.charAt(i)=='0' && flag==false)
+			{
+				continue;
+			}
+			flag=true;
+			ans.append(index.charAt(i));
+		}
+		return Integer.parseInt(ans.toString());
+	}
+	public static void getFile(String mfile,String file)
+	{
+		try
+		{
+			Reader reader=new FileReader(mfile);
+			FileOutputStream fos = new FileOutputStream(file,true);
+			int r=0,l=0;
+			do
+			{
+				char[] chars = new char[48];
+				r=reader.read(chars,0,48);
+				if(r==48)
+				{
+					String str = String.valueOf(chars);
+					String content=map.get(str);
+					String index=content.substring(0,7);
+					int numbytes=getNumberBytes(index);
+					String value=content.substring(7);
+					byte[] buf=value.getBytes();
+					fos.write(buf,0,numbytes);
+					System.out.println(str);
+				}
+			}while(r!=-1);
+			fos.close();
+			reader.close();
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+			System.out.println("Exception :");
+		}
 	}
 	public static void main(String args[]) throws Exception
 	{
 		ChunkHash f=new ChunkHash();
-		//f.removeDedupe("Test/");
+		f.removeDedupe("Test/");
+		/*String path=new String("/home/sridharan/Cloud-Deduplication/Chunklevel/Test/aa.png");
+		String opath=stripExtension(path)+".src";		
+		getFile(opath,path);*/
 		Gson gson=new Gson();
 		compress(gson.toJson(map));			
 	}
