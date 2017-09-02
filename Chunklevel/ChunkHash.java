@@ -8,6 +8,7 @@ import java.util.zip.Deflater;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
+import javax.xml.bind.DatatypeConverter;
 
 public class ChunkHash
 {
@@ -57,7 +58,7 @@ public class ChunkHash
 			result.append("0");
 			System.out.println(result);
 		}
-		return result.toString()+String.valueOf(numbytes)+new String(b);
+		return result.toString()+String.valueOf(numbytes)+DatatypeConverter.printBase64Binary(b);
 	}
 	public static void getChecksum(String file,String metapath)
 	{

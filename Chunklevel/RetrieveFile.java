@@ -8,6 +8,7 @@ import java.util.zip.Deflater;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
+import javax.xml.bind.DatatypeConverter;
 
 public class RetrieveFile
 {
@@ -76,7 +77,7 @@ public class RetrieveFile
 					String index=content.substring(0,7);
 					int numbytes=getNumberBytes(index);
 					String value=content.substring(7);
-					byte[] buf=value.getBytes();
+					byte[] buf=DatatypeConverter.parseBase64Binary(value);
 					fos.write(buf,0,numbytes);
 					System.out.println(str);
 				}
@@ -107,7 +108,7 @@ public class RetrieveFile
 	public static void main(String args[]) throws Exception
 	{
 		RetrieveFile f=new RetrieveFile();
-		String path=new String("/home/sridharan/Cloud-Deduplication/Chunklevel/Test/test.txt");
+		String path=new String("/home/sridharan/Cloud-Deduplication/Chunklevel/Test/vlcsnap-2017-08-15-10h18m54s067.png");
 		String opath=stripExtension(path)+".src";	
 		getFile(opath,path);
 	}
