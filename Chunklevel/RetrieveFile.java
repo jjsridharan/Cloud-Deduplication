@@ -108,7 +108,7 @@ public class RetrieveFile
 	public static void main(String args[]) throws Exception
 	{
 		RetrieveFile f=new RetrieveFile();
-		String path=new String("/home/sridharan/Cloud-Deduplication/Chunklevel/Test/vlcsnap-2017-08-15-10h18m54s067.png");
+		String path=new String("/home/sridharan/Cloud-Deduplication/Chunklevel/Test/ccc.mp3");
 		String opath=stripExtension(path)+".src";	
 		getFile(opath,path);
 	}
