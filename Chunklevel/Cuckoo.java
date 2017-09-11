@@ -32,6 +32,7 @@ class CuckooHashMap<K, V> extends AbstractMap<K, V> implements
 	static final int DEFAULT_INITIAL_CAPACITY = 16;
 	static final int MAXIMUM_CAPACITY = 1 << 30;
 	static final float DEFAULT_LOAD_FACTOR = 0.75f;
+	static Integer Current_Length=new Integer(0);
 
 	/* Test main */
 	public static void main(String[] args) {

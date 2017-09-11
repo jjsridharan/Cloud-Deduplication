@@ -12,7 +12,7 @@ import javax.xml.bind.DatatypeConverter;
 
 public class RetrieveFile
 {
-	static CuckooHashMap<String,String> map;
+	static CuckooHashMap<String,Integer> map;
 	RetrieveFile()
 	{
 		try
@@ -27,7 +27,7 @@ public class RetrieveFile
 			}
 			else
 			{
-				map=new CuckooHashMap<String,String>();
+				map=new CuckooHashMap<String,Integer>();
 			}
 		}
 		catch(Exception e)
@@ -73,15 +73,28 @@ public class RetrieveFile
 				if(r==48)
 				{
 					String str = String.valueOf(chars);
-					String content=map.get(str);
+					String position = String.valueOf(map.get(str));
+					long pos = (long)(Double.parseDouble(position));
+					String defile="dedupe" + pos/10000 + ".txt";
+					RandomAccessFile raf = new RandomAccessFile(defile, "r");
+					System.out.println(((pos%10000))*6000);
+					raf.seek(((pos%10000))*60000000);
+					byte contentbuf[]=new byte[60000000];
+					raf.read(contentbuf,0,60000000);
+					String content=new String(contentbuf);
 					String index=content.substring(0,7);
 					int numbytes=getNumberBytes(index);
-					String value=content.substring(7);
+					content=content.substring(7);
+					index=content.substring(0,10);
+					int contentlen=getNumberBytes(index);
+					String value=content.substring(10);
+					value=value.substring(0,contentlen);
 					byte[] buf=DatatypeConverter.parseBase64Binary(value);
 					fos.write(buf,0,numbytes);
+					raf.close();
 					System.out.println(str);
 				}
-			}while(r!=-1);
+			}while(r!=-1);			
 			fos.close();
 			reader.close();
 		}
@@ -99,7 +112,7 @@ public class RetrieveFile
             	byte[] buffer = new byte[4194304];
             	int len;
             	while((len = gis.read(buffer)) != -1)
-		{
+				{
                 	fos.write(buffer, 0, len);
             	}
 		fos.close();
@@ -108,7 +121,7 @@ public class RetrieveFile
 	public static void main(String args[]) throws Exception
 	{
 		RetrieveFile f=new RetrieveFile();
-		String path=new String("/home/sridharan/Cloud-Deduplication/Chunklevel/Test/ccc.mp3");
+		String path=new String("F:\\Cloud-Deduplication\\Chunklevel\\Test\\You_Rock_My_World-StarMusiQ.Com.mp3");
 		String opath=stripExtension(path)+".src";	
 		getFile(opath,path);
 	}

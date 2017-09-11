@@ -1,28 +1,40 @@
 import java.io.*;
+import java.util.zip.GZIPOutputStream;
 import javax.xml.bind.DatatypeConverter;
 
 public class Test
 {
+	public static void gzipIt(){
+
+     byte[] buffer = new byte[5024000];
+
+     try{
+
+    	GZIPOutputStream gzos =
+    		new GZIPOutputStream(new FileOutputStream("Songs.txt"));
+
+        FileInputStream in =
+            new FileInputStream("dedupe0.txt");
+
+        int len;
+        while ((len = in.read(buffer)) > 0) {
+        	gzos.write(buffer, 0, len);
+        }
+
+        in.close();
+
+    	gzos.finish();
+    	gzos.close();
+
+    	System.out.println("Done");
+
+    }catch(IOException ex){
+       ex.printStackTrace();
+    }
+   }
+
 	public static void main(String[] args) throws Exception
 	{
-			/*FileInputStream fis=new FileInputStream("aa.mp3");
-			FileOutputStream fos = new FileOutputStream("aaa.mp3");
-			byte[] b=new byte[1024];			
-			int numbytes,i=0;
-			boolean f=true;
-			while((numbytes = fis.read(b)) > 0)
-			{
-					String s=DatatypeConverter.printBase64Binary(b);
-					byte[] b1= DatatypeConverter.parseBase64Binary(s);
-					fos.write(b1,0,numbytes);
-			}while(numbytes!=-1);
-			fis.close();
-			fos.close();*/
-			byte[] b=new byte[1];
-			b[0]=-10;
-			String s=DatatypeConverter.printBase64Binary(b);
-			byte b1[]=DatatypeConverter.parseBase64Binary(s);
-			System.out.println(b1.length);
-			System.out.println(b.length);
+		gzipIt();
 	}
 }

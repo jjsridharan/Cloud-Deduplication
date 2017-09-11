@@ -12,7 +12,7 @@ import javax.xml.bind.DatatypeConverter;
 
 public class ChunkHash
 {
-	static CuckooHashMap<String,String> map;
+	static CuckooHashMap<String,Integer> map;
 	ChunkHash()
 	{
 		try
@@ -28,7 +28,7 @@ public class ChunkHash
 			}
 			else
 			{
-				map=new CuckooHashMap<String,String>();
+				map=new CuckooHashMap<String,Integer>();
 			}
 		}
 		catch(Exception e)
@@ -43,22 +43,28 @@ public class ChunkHash
 		int pos = str.lastIndexOf(".");
 		if (pos == -1) return str;
 		return str.substring(0, pos);
-    	}
-	public static String ConvertFormat(int numbytes,byte[] b)
+	}
+	public static String FormString(int numbytes,int length)
 	{
-		int length=0,cp=numbytes;
+		int len=0,cp=numbytes;
 		while(cp!=0)
 		{
-			length++;
+			len++;
 			cp/=10;
 		}
 		StringBuilder result=new StringBuilder();
-		for(int i=0;i<7-length;i++)
+		for(int i=0;i<length-len;i++)
 		{
 			result.append("0");
-			System.out.println(result);
 		}
-		return result.toString()+String.valueOf(numbytes)+DatatypeConverter.printBase64Binary(b);
+		return result.toString();
+	}
+	public static String ConvertFormat(int numbytes,byte[] b)
+	{
+		String content=DatatypeConverter.printBase64Binary(b);
+		char fill = '0';
+		String padded = content + new String(new char[60000000 - content.length()-7-10]).replace('\0', fill) ;
+		return FormString(numbytes,7)+String.valueOf(numbytes)+FormString(content.length(),10)+String.valueOf(content.length())+padded;
 	}
 	public static void getChecksum(String file,String metapath)
 	{
@@ -72,28 +78,41 @@ public class ChunkHash
 			String hashvalue;
 			FileWriter fw = new FileWriter(metapath, true);
 			BufferedWriter bw = new BufferedWriter(fw);
+			String dedupefile="dedupe"+map.Current_Length/10000+".txt";
+			FileWriter defw = new FileWriter(dedupefile, true);
+			BufferedWriter debw = new BufferedWriter(defw);
 			do
 			{
 				MessageDigest mesdigest=MessageDigest.getInstance("MD5");
 				numbytes=fis.read(b);
-		                if(numbytes>0)
+		        if(numbytes>0)
 				{	
 					mesdigest.update(b,0,numbytes);
 					hashvalue=getHash(mesdigest.digest());
 					bw.write(hashvalue);
 					System.out.println(hashvalue.length());
 					if(map.get(hashvalue)==null)
-					{						
-						map.put(hashvalue,ConvertFormat(numbytes,b));
+					{			
+						debw.write(ConvertFormat(numbytes,b));
+						map.put(hashvalue,map.Current_Length++);
+						if(map.Current_Length%10000==0)
+						{
+							dedupefile="dedupe"+map.Current_Length/10000+".txt";							
+							defw = new FileWriter(dedupefile, true);
+							debw = new BufferedWriter(defw);
+						}
 					}
 				}
 			}while(numbytes!=-1);
 			fis.close();
-			bw.close();
+			bw.close();			
 			fw.close();	
+			debw.close();
+			defw.close();			
 		}
 		catch(Exception e)
 		{
+			e.printStackTrace();
 			System.out.println("Exception :"+e);
 		}
 	}
@@ -170,45 +189,10 @@ public class ChunkHash
 		}
 		return Integer.parseInt(ans.toString());
 	}
-	public static void getFile(String mfile,String file)
-	{
-		try
-		{
-			Reader reader=new FileReader(mfile);
-			FileOutputStream fos = new FileOutputStream(file,true);
-			int r=0,l=0;
-			do
-			{
-				char[] chars = new char[48];
-				r=reader.read(chars,0,48);
-				if(r==48)
-				{
-					String str = String.valueOf(chars);
-					String content=map.get(str);
-					String index=content.substring(0,7);
-					int numbytes=getNumberBytes(index);
-					String value=content.substring(7);
-					byte[] buf=value.getBytes();
-					fos.write(buf,0,numbytes);
-					System.out.println(str);
-				}
-			}while(r!=-1);
-			fos.close();
-			reader.close();
-		}
-		catch(Exception e)
-		{
-			e.printStackTrace();
-			System.out.println("Exception :");
-		}
-	}
 	public static void main(String args[]) throws Exception
 	{
 		ChunkHash f=new ChunkHash();
 		f.removeDedupe("Test/");
-		/*String path=new String("/home/sridharan/Cloud-Deduplication/Chunklevel/Test/aa.png");
-		String opath=stripExtension(path)+".src";		
-		getFile(opath,path);*/
 		Gson gson=new Gson();
 		compress(gson.toJson(map));			
 	}
