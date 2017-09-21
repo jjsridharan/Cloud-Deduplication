@@ -78,9 +78,9 @@ public class RetrieveFile
 					String defile="dedupe" + pos/10000 + ".txt";
 					RandomAccessFile raf = new RandomAccessFile(defile, "r");
 					System.out.println(((pos%10000))*6000);
-					raf.seek(((pos%10000))*60000000);
-					byte contentbuf[]=new byte[60000000];
-					raf.read(contentbuf,0,60000000);
+					raf.seek(((pos%10000))*5592425);
+					byte contentbuf[]=new byte[5592426];
+					raf.read(contentbuf,0,5592425);
 					String content=new String(contentbuf);
 					String index=content.substring(0,7);
 					int numbytes=getNumberBytes(index);
@@ -121,7 +121,7 @@ public class RetrieveFile
 	public static void main(String args[]) throws Exception
 	{
 		RetrieveFile f=new RetrieveFile();
-		String path=new String("F:\\Cloud-Deduplication\\Chunklevel\\Test\\You_Rock_My_World-StarMusiQ.Com.mp3");
+		String path=new String("/home/sridharan/Cloud-Deduplication/Chunklevel/Test/a.mp3");
 		String opath=stripExtension(path)+".src";	
 		getFile(opath,path);
 	}

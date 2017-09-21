@@ -62,9 +62,9 @@ public class ChunkHash
 	public static String ConvertFormat(int numbytes,byte[] b)
 	{
 		String content=DatatypeConverter.printBase64Binary(b);
-		char fill = '0';
-		String padded = content + new String(new char[60000000 - content.length()-7-10]).replace('\0', fill) ;
-		return FormString(numbytes,7)+String.valueOf(numbytes)+FormString(content.length(),10)+String.valueOf(content.length())+padded;
+		String res=FormString(numbytes,7)+String.valueOf(numbytes)+FormString(content.length(),10)+String.valueOf(content.length())+content;
+		System.out.println(res.length());
+		return res;
 	}
 	public static void getChecksum(String file,String metapath)
 	{
@@ -85,7 +85,7 @@ public class ChunkHash
 			{
 				MessageDigest mesdigest=MessageDigest.getInstance("MD5");
 				numbytes=fis.read(b);
-		        if(numbytes>0)
+		        	if(numbytes>0)
 				{	
 					mesdigest.update(b,0,numbytes);
 					hashvalue=getHash(mesdigest.digest());
@@ -145,6 +145,19 @@ public class ChunkHash
 			}
 		}
 	}
+	public static byte[] compressstring(String str) throws IOException 
+	{
+		if ((str == null) || (str.length() == 0)) 
+		{
+			  return null;
+		}
+                ByteArrayOutputStream obj = new ByteArrayOutputStream();
+		GZIPOutputStream gzip = new GZIPOutputStream(obj);
+		gzip.write(str.getBytes("UTF-8"));
+		gzip.flush();
+		gzip.close();
+		return obj.toByteArray();
+	  }
 	public static void compress(String data) throws IOException 
 	{
 		File f=new File("dedupe.json");
