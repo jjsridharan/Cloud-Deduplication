@@ -4,6 +4,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import java.util.Arrays;
 import java.util.zip.Deflater;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.GZIPInputStream;
@@ -12,7 +14,10 @@ import javax.xml.bind.DatatypeConverter;
 
 public class ChunkHash
 {
-	static CuckooHashMap<String,Integer> map;
+	static CuckooHashMap<String,Pairing<Integer,Pair<Integer,Integer>>> map;
+	static Pair<Integer,Integer> pair1;
+	static Pairing<Integer,Pair<Integer,Integer>> pair;
+	static Integer bytecount=new Integer(0);
 	ChunkHash()
 	{
 		try
@@ -22,13 +27,13 @@ public class ChunkHash
 				decompress();
 				Gson gson=new Gson();
 				Reader reader = new FileReader("dedupe.json");
-				map = gson.fromJson(reader, CuckooHashMap.class);
+				map = gson.fromJson(reader, new TypeToken<CuckooHashMap<String,Pairing<Integer,Pair<Integer,Integer>>>>(){}.getType());
 				reader.close();
 				new File("dedupe.json").delete();
 			}
 			else
 			{
-				map=new CuckooHashMap<String,Integer>();
+				map=new CuckooHashMap<String,Pairing<Integer,Pair<Integer,Integer>>>();
 			}
 		}
 		catch(Exception e)
@@ -59,13 +64,18 @@ public class ChunkHash
 		}
 		return result.toString();
 	}
-	public static String ConvertFormat(int numbytes,byte[] b)
+	public static byte[] ConvertFormat(int numbytes,byte[] b)throws IOException
 	{
-		String content=DatatypeConverter.printBase64Binary(b);
+		byte[] cb=Arrays.copyOfRange(b, 0, numbytes);
+		String content=DatatypeConverter.printBase64Binary(cb);
 		String res=FormString(numbytes,7)+String.valueOf(numbytes)+FormString(content.length(),10)+String.valueOf(content.length())+content;
-		System.out.println(res.length());
-		return res;
-	}
+		byte[] ba=compressstring(res);
+		pair1=new Pair<Integer,Integer>(bytecount,ba.length);
+		pair=new Pairing<Integer,Pair<Integer,Integer>>(map.Current_Length++,pair1);	
+		System.out.println(map.Current_Length);
+		bytecount+=ba.length;	
+		return ba;
+	}	
 	public static void getChecksum(String file,String metapath)
 	{
 		try
@@ -79,8 +89,7 @@ public class ChunkHash
 			FileWriter fw = new FileWriter(metapath, true);
 			BufferedWriter bw = new BufferedWriter(fw);
 			String dedupefile="dedupe"+map.Current_Length/10000+".txt";
-			FileWriter defw = new FileWriter(dedupefile, true);
-			BufferedWriter debw = new BufferedWriter(defw);
+			FileOutputStream out = new FileOutputStream(dedupefile,true);
 			do
 			{
 				MessageDigest mesdigest=MessageDigest.getInstance("MD5");
@@ -93,22 +102,28 @@ public class ChunkHash
 					System.out.println(hashvalue.length());
 					if(map.get(hashvalue)==null)
 					{			
-						debw.write(ConvertFormat(numbytes,b));
-						map.put(hashvalue,map.Current_Length++);
-						if(map.Current_Length%10000==0)
+						out.write(ConvertFormat(numbytes,b));
+						map.put(hashvalue,pair);
+						if(map.Current_Length%1000==0)
 						{
-							dedupefile="dedupe"+map.Current_Length/10000+".txt";							
-							defw = new FileWriter(dedupefile, true);
-							debw = new BufferedWriter(defw);
+							dedupefile="dedupe"+map.Current_Length/10000+".txt";
+							out.flush();
+							out.close();
+							out = new FileOutputStream(dedupefile,true);
+							bytecount=new Integer(0);							
+						}
+						if(map.Current_Length%100==0)
+						{
+							out.flush();
 						}
 					}
 				}
 			}while(numbytes!=-1);
 			fis.close();
 			bw.close();			
-			fw.close();	
-			debw.close();
-			defw.close();			
+			fw.close();
+			out.flush();	
+			out.close();		
 		}
 		catch(Exception e)
 		{
@@ -134,6 +149,7 @@ public class ChunkHash
 		{
 			if(file.isFile())
 			{
+				System.out.println(file.getName());
 				String metapath=file.getParent()+"/"+stripExtension(file.getName())+".src";
 				getChecksum(file.getAbsolutePath(),metapath);
 				file.delete();
@@ -157,7 +173,7 @@ public class ChunkHash
 		gzip.flush();
 		gzip.close();
 		return obj.toByteArray();
-	  }
+	}
 	public static void compress(String data) throws IOException 
 	{
 		File f=new File("dedupe.json");

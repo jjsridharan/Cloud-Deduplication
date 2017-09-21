@@ -3,7 +3,9 @@ import java.security.MessageDigest;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.charset.StandardCharsets;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import java.util.zip.Deflater;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.GZIPInputStream;
@@ -12,7 +14,7 @@ import javax.xml.bind.DatatypeConverter;
 
 public class RetrieveFile
 {
-	static CuckooHashMap<String,Integer> map;
+	static CuckooHashMap<String,Pairing<Integer,Pair<Integer,Integer>>> map;
 	RetrieveFile()
 	{
 		try
@@ -22,12 +24,12 @@ public class RetrieveFile
 				decompress();
 				Gson gson=new Gson();
 				Reader reader = new FileReader("dedupe.json");
-				map = gson.fromJson(reader, CuckooHashMap.class);
+				map = gson.fromJson(reader, new TypeToken<CuckooHashMap<String,Pairing<Integer,Pair<Integer,Integer>>>>(){}.getType());
 				new File("dedupe.json").delete();
 			}
 			else
 			{
-				map=new CuckooHashMap<String,Integer>();
+				map=new CuckooHashMap<String,Pairing<Integer,Pair<Integer,Integer>>>();
 			}
 		}
 		catch(Exception e)
@@ -59,7 +61,7 @@ public class RetrieveFile
 		}
 		return Integer.parseInt(ans.toString());
 	}
-	public static void getFile(String mfile,String file)
+	public static void getFile(String mfile,String file)throws IOException
 	{
 		try
 		{
@@ -73,15 +75,17 @@ public class RetrieveFile
 				if(r==48)
 				{
 					String str = String.valueOf(chars);
-					String position = String.valueOf(map.get(str));
+					Pairing<Integer,Pair<Integer,Integer>> pair=map.get(str);
+					String position = String.valueOf(pair.getLeft());
 					long pos = (long)(Double.parseDouble(position));
 					String defile="dedupe" + pos/10000 + ".txt";
 					RandomAccessFile raf = new RandomAccessFile(defile, "r");
-					System.out.println(((pos%10000))*6000);
-					raf.seek(((pos%10000))*5592425);
-					byte contentbuf[]=new byte[5592426];
-					raf.read(contentbuf,0,5592425);
-					String content=new String(contentbuf);
+					Pair<Integer,Integer> pair1=pair.getRight();
+					System.out.println(((pos%10000))*6000+"sd"+pair1.getLeft()+"SDf"+pair1.getRight());
+					raf.seek(pair1.getLeft());
+					byte[] contentbuf=new byte[pair1.getRight()+1];
+					raf.read(contentbuf,0,pair1.getRight());					
+					String content=decompressstring(contentbuf);
 					String index=content.substring(0,7);
 					int numbytes=getNumberBytes(index);
 					content=content.substring(7);
@@ -104,6 +108,35 @@ public class RetrieveFile
 			System.out.println("Exception :");
 		}
 	}
+	public static String decompressstring(byte[] compressed) {
+        if ((compressed == null) || (compressed.length == 0)) {
+            throw new IllegalArgumentException("Cannot unzip null or empty bytes");
+        }
+        if (!isZipped(compressed)) {
+            return new String(compressed);
+        }
+
+        try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(compressed)) {
+            try (GZIPInputStream gzipInputStream = new GZIPInputStream(byteArrayInputStream)) {
+                try (InputStreamReader inputStreamReader = new InputStreamReader(gzipInputStream, StandardCharsets.UTF_8)) {
+                    try (BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
+                        StringBuilder output = new StringBuilder();
+                        String line;
+                        while((line = bufferedReader.readLine()) != null){
+                            output.append(line);
+                        }
+                        return output.toString();
+                    }
+                }
+            }
+        } catch(IOException e) {
+            throw new RuntimeException("Failed to unzip content", e);
+        }
+    }
+
+    public static boolean isZipped(final byte[] compressed) {
+        return (compressed[0] == (byte) (GZIPInputStream.GZIP_MAGIC)) && (compressed[1] == (byte) (GZIPInputStream.GZIP_MAGIC >> 8));
+    }
 	public static void decompress() throws IOException
 	{
 		FileInputStream fis = new FileInputStream("dedupe.txt");
@@ -112,7 +145,7 @@ public class RetrieveFile
             	byte[] buffer = new byte[4194304];
             	int len;
             	while((len = gis.read(buffer)) != -1)
-				{
+		{
                 	fos.write(buffer, 0, len);
             	}
 		fos.close();
@@ -121,7 +154,7 @@ public class RetrieveFile
 	public static void main(String args[]) throws Exception
 	{
 		RetrieveFile f=new RetrieveFile();
-		String path=new String("/home/sridharan/Cloud-Deduplication/Chunklevel/Test/a.mp3");
+		String path=new String("/home/sridharan/Cloud-Deduplication/Chunklevel/Test/ClueWeb12_Disk1_DocID_To_URL.txt");
 		String opath=stripExtension(path)+".src";	
 		getFile(opath,path);
 	}
