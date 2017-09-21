@@ -78,10 +78,10 @@ public class RetrieveFile
 					Pairing<Integer,Pair<Integer,Integer>> pair=map.get(str);
 					String position = String.valueOf(pair.getLeft());
 					long pos = (long)(Double.parseDouble(position));
-					String defile="dedupe" + pos/10000 + ".txt";
+					String defile="dedupe" + pos/1000 + ".txt";
 					RandomAccessFile raf = new RandomAccessFile(defile, "r");
 					Pair<Integer,Integer> pair1=pair.getRight();
-					System.out.println(((pos%10000))*6000+"sd"+pair1.getLeft()+"SDf"+pair1.getRight());
+					System.out.println(((pos%1000))*6000+"sd"+pair1.getLeft()+"SDf"+pair1.getRight());
 					raf.seek(pair1.getLeft());
 					byte[] contentbuf=new byte[pair1.getRight()+1];
 					raf.read(contentbuf,0,pair1.getRight());					

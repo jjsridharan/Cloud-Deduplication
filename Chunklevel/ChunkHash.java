@@ -88,7 +88,7 @@ public class ChunkHash
 			String hashvalue;
 			FileWriter fw = new FileWriter(metapath, true);
 			BufferedWriter bw = new BufferedWriter(fw);
-			String dedupefile="dedupe"+map.Current_Length/10000+".txt";
+			String dedupefile="dedupe"+map.Current_Length/1000+".txt";
 			FileOutputStream out = new FileOutputStream(dedupefile,true);
 			do
 			{
@@ -106,7 +106,7 @@ public class ChunkHash
 						map.put(hashvalue,pair);
 						if(map.Current_Length%1000==0)
 						{
-							dedupefile="dedupe"+map.Current_Length/10000+".txt";
+							dedupefile="dedupe"+map.Current_Length/1000+".txt";
 							out.flush();
 							out.close();
 							out = new FileOutputStream(dedupefile,true);
