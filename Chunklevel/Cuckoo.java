@@ -7,6 +7,7 @@ import java.util.Random;
 import java.util.Set;
 import java.io.Serializable;
 
+
 /**
  * Cuckoo Hash Map
  * 
@@ -32,8 +33,8 @@ class CuckooHashMap<K, V> extends AbstractMap<K, V> implements
 	static final int DEFAULT_INITIAL_CAPACITY = 16;
 	static final int MAXIMUM_CAPACITY = 1 << 30;
 	static final float DEFAULT_LOAD_FACTOR = 0.75f;
-	static Integer Current_Length=new Integer(0);
 
+	static Integer Current_Length=new Integer(0);
 	/* Test main */
 	public static void main(String[] args) {
 		Map<String, String> map = new CuckooHashMap<String, String>();

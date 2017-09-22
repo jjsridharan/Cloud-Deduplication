@@ -11,13 +11,14 @@ import java.util.zip.DeflaterOutputStream;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import javax.xml.bind.DatatypeConverter;
+import java.util.Scanner;
 
 public class ChunkHash
 {
 	static CuckooHashMap<String,Pairing<Integer,Pair<Integer,Integer>>> map;
 	static Pair<Integer,Integer> pair1;
 	static Pairing<Integer,Pair<Integer,Integer>> pair;
-	static Integer bytecount=new Integer(0);
+	static Integer bytecount;
 	ChunkHash()
 	{
 		try
@@ -25,15 +26,21 @@ public class ChunkHash
 			if(new File("dedupe.txt").exists())
 			{
 				decompress();
-				Gson gson=new Gson();
+				Gson gson=new Gson(); 
 				Reader reader = new FileReader("dedupe.json");
 				map = gson.fromJson(reader, new TypeToken<CuckooHashMap<String,Pairing<Integer,Pair<Integer,Integer>>>>(){}.getType());
 				reader.close();
 				new File("dedupe.json").delete();
+				Scanner sa=new Scanner(new File("current.txt"));
+				map.Current_Length=new Integer(sa.nextLine());
+				bytecount=new Integer(sa.nextLine());
+				System.out.println(map.Current_Length);
 			}
 			else
 			{
 				map=new CuckooHashMap<String,Pairing<Integer,Pair<Integer,Integer>>>();
+				map.Current_Length=new Integer(0);
+				bytecount=new Integer(0);
 			}
 		}
 		catch(Exception e)
@@ -176,8 +183,6 @@ public class ChunkHash
 	}
 	public static void compress(String data) throws IOException 
 	{
-		File f=new File("dedupe.json");
-		f.delete();
 		ByteArrayOutputStream bos = new ByteArrayOutputStream(data.length());
 		GZIPOutputStream gzip = new GZIPOutputStream(bos);
 		gzip.write(data.getBytes());
@@ -186,7 +191,9 @@ public class ChunkHash
 		bos.writeTo(os);
 		bos.close();
 		os.close();
-		
+		Writer wr=new FileWriter("current.txt");
+		wr.write(""+ map.Current_Length+"\n"+bytecount);
+		wr.close();		
 	}
 	public static void decompress() throws IOException
 	{
@@ -222,7 +229,7 @@ public class ChunkHash
 	{
 		ChunkHash f=new ChunkHash();
 		f.removeDedupe("Test/");
-		Gson gson=new Gson();
-		compress(gson.toJson(map));			
+		Gson gson=new Gson(); 
+		compress(gson.toJson(map));
 	}
 }

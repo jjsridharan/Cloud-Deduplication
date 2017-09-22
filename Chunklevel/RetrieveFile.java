@@ -154,7 +154,7 @@ public class RetrieveFile
 	public static void main(String args[]) throws Exception
 	{
 		RetrieveFile f=new RetrieveFile();
-		String path=new String("/home/sridharan/Cloud-Deduplication/Chunklevel/Test/ClueWeb12_Disk1_DocID_To_URL.txt");
+		String path=new String("/home/sridharan/Cloud-Deduplication/Chunklevel/Test/ccc.mp3");
 		String opath=stripExtension(path)+".src";	
 		getFile(opath,path);
 	}
