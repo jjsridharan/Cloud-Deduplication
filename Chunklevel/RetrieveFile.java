@@ -81,20 +81,12 @@ public class RetrieveFile
 					String defile="dedupe" + pos/1000 + ".txt";
 					RandomAccessFile raf = new RandomAccessFile(defile, "r");
 					Pair<Integer,Integer> pair1=pair.getRight();
-					System.out.println(((pos%1000))*6000+"sd"+pair1.getLeft()+"SDf"+pair1.getRight());
 					raf.seek(pair1.getLeft());
 					byte[] contentbuf=new byte[pair1.getRight()+1];
 					raf.read(contentbuf,0,pair1.getRight());					
 					String content=decompressstring(contentbuf);
-					String index=content.substring(0,7);
-					int numbytes=getNumberBytes(index);
-					content=content.substring(7);
-					index=content.substring(0,10);
-					int contentlen=getNumberBytes(index);
-					String value=content.substring(10);
-					value=value.substring(0,contentlen);
-					byte[] buf=DatatypeConverter.parseBase64Binary(value);
-					fos.write(buf,0,numbytes);
+					byte[] buf=DatatypeConverter.parseBase64Binary(content);
+					fos.write(buf);
 					raf.close();
 					System.out.println(str);
 				}
@@ -154,7 +146,7 @@ public class RetrieveFile
 	public static void main(String args[]) throws Exception
 	{
 		RetrieveFile f=new RetrieveFile();
-		String path=new String("/home/sridharan/Cloud-Deduplication/Chunklevel/Test/ccc.mp3");
+		String path=new String("Test\\hel1.jpg");
 		String opath=stripExtension(path)+".src";	
 		getFile(opath,path);
 	}

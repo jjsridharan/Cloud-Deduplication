@@ -75,8 +75,7 @@ public class ChunkHash
 	{
 		byte[] cb=Arrays.copyOfRange(b, 0, numbytes);
 		String content=DatatypeConverter.printBase64Binary(cb);
-		String res=FormString(numbytes,7)+String.valueOf(numbytes)+FormString(content.length(),10)+String.valueOf(content.length())+content;
-		byte[] ba=compressstring(res);
+		byte[] ba=compressstring(content);
 		pair1=new Pair<Integer,Integer>(bytecount,ba.length);
 		pair=new Pairing<Integer,Pair<Integer,Integer>>(map.Current_Length++,pair1);	
 		System.out.println(map.Current_Length);
