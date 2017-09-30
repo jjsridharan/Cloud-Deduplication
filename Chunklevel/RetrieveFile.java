@@ -1,11 +1,11 @@
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import java.io.*;
-import java.security.MessageDigest;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.charset.StandardCharsets;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+import java.security.MessageDigest;
 import java.util.zip.Deflater;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.GZIPInputStream;
@@ -67,6 +67,7 @@ public class RetrieveFile
 		{
 			Reader reader=new FileReader(mfile);
 			FileOutputStream fos = new FileOutputStream(file,true);
+			//copy attributes
 			int r=0,l=0;
 			do
 			{
@@ -146,7 +147,7 @@ public class RetrieveFile
 	public static void main(String args[]) throws Exception
 	{
 		RetrieveFile f=new RetrieveFile();
-		String path=new String("Test\\hel1.jpg");
+		String path=new String("Test\\5-  Delta Bookshelf.mp4");  
 		String opath=stripExtension(path)+".src";	
 		getFile(opath,path);
 	}

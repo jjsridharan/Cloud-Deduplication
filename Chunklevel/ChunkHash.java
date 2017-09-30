@@ -1,17 +1,18 @@
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import java.io.*;
-import java.security.MessageDigest;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import java.util.Arrays;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.util.Scanner;
 import java.util.zip.Deflater;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import javax.xml.bind.DatatypeConverter;
-import java.util.Scanner;
+
 
 public class ChunkHash
 {
