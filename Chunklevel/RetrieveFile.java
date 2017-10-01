@@ -150,7 +150,7 @@ public class RetrieveFile
 	public static void main(String args[]) throws Exception
 	{
 		RetrieveFile f=new RetrieveFile();
-		String path=new String("Test\\5-  Delta Bookshelf.mp4");  
+		String path=new String("Test\\aa.mp3");  
 		String opath=stripExtension(path)+".src";	
 		getFile(opath,path);
 	}
