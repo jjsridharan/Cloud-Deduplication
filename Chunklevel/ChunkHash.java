@@ -14,7 +14,6 @@ import java.util.zip.GZIPOutputStream;
 import javax.xml.bind.DatatypeConverter;
 import java.util.Arrays;
 
-
 public class ChunkHash
 {
 	static CuckooHashMap<String,Pairing<Integer,Pair<Integer,Integer>>> map;
@@ -160,6 +159,7 @@ public class ChunkHash
 				System.out.println(file.getName());
 				String metapath=file.getParent()+"/"+stripExtension(file.getName())+".src";
 				getChecksum(file.getAbsolutePath(),metapath);
+				CopyAttributes.copy(file.getAbsolutePath(),metapath);
 				file.delete();
 			}
 			else

@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.text.SimpleDateFormat;
 import java.util.zip.Deflater;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.GZIPInputStream;
@@ -61,12 +62,12 @@ public class RetrieveFile
 		}
 		return Integer.parseInt(ans.toString());
 	}
-	public static void getFile(String mfile,String file)throws IOException
+	public static void getFile(String mfile,String fileo)throws IOException
 	{
 		try
 		{
 			Reader reader=new FileReader(mfile);
-			FileOutputStream fos = new FileOutputStream(file,true);
+			FileOutputStream fos = new FileOutputStream(fileo,true);
 			//copy attributes
 			int r=0,l=0;
 			do
@@ -100,7 +101,8 @@ public class RetrieveFile
 			e.printStackTrace();
 			System.out.println("Exception :");
 		}
-	}
+		CopyAttributes.copy(mfile,fileo);
+		}
 	public static String decompressstring(byte[] compressed) {
         if ((compressed == null) || (compressed.length == 0)) {
             throw new IllegalArgumentException("Cannot unzip null or empty bytes");
@@ -125,6 +127,7 @@ public class RetrieveFile
         } catch(IOException e) {
             throw new RuntimeException("Failed to unzip content", e);
         }
+
     }
 
     public static boolean isZipped(final byte[] compressed) {
