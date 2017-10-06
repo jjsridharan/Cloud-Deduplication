@@ -160,6 +160,8 @@ public class ChunkHash
 				String metapath=file.getParent()+"/"+stripExtension(file.getName())+".src";
 				getChecksum(file.getAbsolutePath(),metapath);
 				CopyAttributes.copy(file.getAbsolutePath(),metapath);
+				int index = (file.getName()).lastIndexOf('.');
+				SaveAttribute.Save(metapath,(file.getName()).substring(index+1));				
 				file.delete();
 			}
 			else

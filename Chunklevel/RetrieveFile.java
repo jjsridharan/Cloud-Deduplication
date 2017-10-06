@@ -150,8 +150,8 @@ public class RetrieveFile
 	public static void main(String args[]) throws Exception
 	{
 		RetrieveFile f=new RetrieveFile();
-		String path=new String("Test\\aa.mp3");  
-		String opath=stripExtension(path)+".src";	
+		String opath=new String("Test\\hel.src");  
+		String path=stripExtension(opath)+"."+RetrieveAttribute.Retrieve(opath);
 		getFile(opath,path);
 	}
 }
