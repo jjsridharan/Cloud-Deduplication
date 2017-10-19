@@ -150,7 +150,7 @@ public class RetrieveFile
 	public static void main(String args[]) throws Exception
 	{
 		RetrieveFile f=new RetrieveFile();
-		String opath=new String("Test\\hel.src");  
+		String opath=new String("Test\\d.src");  
 		String path=stripExtension(opath)+"."+RetrieveAttribute.Retrieve(opath);
 		getFile(opath,path);
 	}

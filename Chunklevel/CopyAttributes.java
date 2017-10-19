@@ -24,7 +24,6 @@ public class CopyAttributes
 	try{
 			Path file=Paths.get(mfile);
 			BasicFileAttributes attr = Files.readAttributes(file, BasicFileAttributes.class);			
-			System.out.println("------------------------File Attributes for /home/nihil/virtual.cpp -------------------------"); 
 			//Calendar c = Calendar.getInstance();
 			ct=attr.creationTime();
 			lat=attr.lastAccessTime();

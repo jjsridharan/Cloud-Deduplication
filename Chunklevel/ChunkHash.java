@@ -149,19 +149,24 @@ public class ChunkHash
        		return result;
 		
 	}
-     	public void removeDedupe(String path)throws Exception
+    public void removeDedupe(String path)throws Exception
 	{
 		File[] files= new File(path).listFiles();
 		for(File file :files)
 		{
 			if(file.isFile())
 			{
+				int index = (file.getName()).lastIndexOf('.');
+				String extension=(file.getName()).substring(index+1);
 				System.out.println(file.getName());
+				if(extension.equals("src"))
+				{
+					continue;
+				}				
 				String metapath=file.getParent()+"/"+stripExtension(file.getName())+".src";
 				getChecksum(file.getAbsolutePath(),metapath);
 				CopyAttributes.copy(file.getAbsolutePath(),metapath);
-				int index = (file.getName()).lastIndexOf('.');
-				SaveAttribute.Save(metapath,(file.getName()).substring(index+1));				
+				SaveAttribute.Save(metapath,extension); 				
 				file.delete();
 			}
 			else
