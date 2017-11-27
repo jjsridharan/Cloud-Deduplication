@@ -86,6 +86,7 @@ public class RetrieveFile
 					raf.seek(pair1.getLeft());
 					byte[] contentbuf=new byte[pair1.getRight()+1];
 					raf.read(contentbuf,0,pair1.getRight());					
+					System.out.println(pair1.getLeft()+""+pair1.getRight());
 					String content=decompressstring(contentbuf);
 					byte[] buf=DatatypeConverter.parseBase64Binary(content);
 					fos.write(buf);
@@ -150,7 +151,7 @@ public class RetrieveFile
 	public static void main(String args[]) throws Exception
 	{
 		RetrieveFile f=new RetrieveFile();
-		String opath=new String("Test\\d.src");  
+		String opath=new String("Test//sample.src");  
 		String path=stripExtension(opath)+"."+RetrieveAttribute.Retrieve(opath);
 		getFile(opath,path);
 	}

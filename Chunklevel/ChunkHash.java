@@ -101,7 +101,7 @@ public class ChunkHash
 			{
 				MessageDigest mesdigest=MessageDigest.getInstance("MD5");
 				numbytes=fis.read(b);
-		        if(numbytes>0)
+		       		if(numbytes>0)
 				{	
 					mesdigest.update(b,0,numbytes);
 					hashvalue=getHash(mesdigest.digest());
@@ -167,7 +167,7 @@ public class ChunkHash
 				getChecksum(file.getAbsolutePath(),metapath);
 				CopyAttributes.copy(file.getAbsolutePath(),metapath);
 				SaveAttribute.Save(metapath,extension); 				
-				file.delete();
+				//file.delete();
 			}
 			else
 			{
