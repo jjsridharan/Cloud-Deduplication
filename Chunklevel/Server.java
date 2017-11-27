@@ -109,7 +109,7 @@ public class Server
 		Pairing<Integer,Pair<Integer,Integer>> pair;
 		for(String e : hashoffset.keySet())
 		{
-			RandomAccessFile raf = new RandomAccessFile("sepdedupe.txt", "r");
+			RandomAccessFile raf = new RandomAccessFile("Test/Server/sepdedupe.txt", "r");
 			Pair<Integer,Integer> pair1=hashoffset.get(e);
 			raf.seek(pair1.getLeft());
 			byte[] contentbuf=new byte[pair1.getRight()+1];

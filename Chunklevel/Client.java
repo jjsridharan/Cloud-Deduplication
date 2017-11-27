@@ -7,6 +7,9 @@ import com.google.gson.reflect.TypeToken;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import org.apache.commons.net.ftp.FTP;
+import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.FTPReply;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import javax.xml.bind.DatatypeConverter;
@@ -132,12 +135,53 @@ class Client
 		gzip.close();
 		return obj.toByteArray();
 	}
+	static void UploadFiles(List<String> files)
+	{
+		try
+		{
+				String server="192.168.1.101",user="sridharan",pass="student";
+				int port=21;
+				FTPClient ftpClient = new FTPClient();
+				ftpClient.connect(server,port);
+				ftpClient.enterLocalPassiveMode();
+				int reply = ftpClient.getReplyCode();
+
+	      if(!FTPReply.isPositiveCompletion(reply)) {
+		ftpClient.disconnect();
+		System.err.println("FTP server refused connection.");
+		System.exit(1);
+	      }
+				if(ftpClient.login(user,pass))
+				{
+					System.out.println("Successfull");
+					for(String i : files)
+					{
+						File file=new File(i);
+						InputStream in = new FileInputStream(file.getParent()+"/"+stripExtension(file.getName())+".src");
+		       				ftpClient.setFileType(FTP.BINARY_FILE_TYPE);		
+		        			ftpClient.enterLocalPassiveMode();
+		        			boolean Store = ftpClient.storeFile("/home/sridharan/Cloud-Deduplication/Chunklevel/Test/Server/"+stripExtension(file.getName())+".src", in);
+						System.out.println(file.getParent()+"/Server/"+stripExtension(file.getName())+".src");
+						System.out.println(ftpClient.getReplyString());
+					}
+				}
+			else
+			{
+				System.out.println("Login failed");
+			} 
+			
+		}
+		catch(Exception e)
+		{
+			System.out.println(e);
+		}
+	}
 	public static void main(String args[])throws Exception
 	{  
 		List<String> files=new ArrayList<String>();
 		List<String> duplicated;
-		//files.add("Test/aa.mp3");
-		//files.add("Test/ccc.mp3");
+		files.add("Test/aa.mp3");
+		files.add("Test/ccc.mp3");
 		files.add("Test/a.png");
 		files.add("Test/sample.txt");
 		Client client=new Client();
@@ -163,6 +207,7 @@ class Client
 			s=new Socket("127.0.0.1",9999);  
 			din=new DataInputStream(s.getInputStream());  
 			dout=new DataOutputStream(s.getOutputStream()); 
+			UploadFiles(files);
 			dout.writeUTF(gson.toJson(offsetlist));
 			dout.flush();
 			duped=din.readUTF();
