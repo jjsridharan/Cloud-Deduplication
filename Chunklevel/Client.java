@@ -1,33 +1,46 @@
-import java.net.Socket;  
-import java.security.MessageDigest;
-import java.io.*;  
-import java.util.*;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.InputStream;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import org.apache.commons.net.ftp.FTP;
-import org.apache.commons.net.ftp.FTPClient;
-import org.apache.commons.net.ftp.FTPReply;
+import java.nio.file.Paths;  
+import java.security.MessageDigest;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Scanner;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import javax.xml.bind.DatatypeConverter;
+import org.apache.commons.net.ftp.FTP;
+import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.FTPReply;
 
 class Client
 {  
-	public static List<String> listofhash;
-	public static CuckooHashMap<String,String> hashlist;
-	public static CuckooHashMap<String,Pair<Integer,Integer>> hashoffset;
-	public static CuckooHashMap<String,String> offsetlist;
-	public static CuckooHashMap<String,Pair<String,Integer>> map;	
+	static List<String> listofhash;
+	static CuckooHashMap<String,String> hashlist,offsetlist,extensionlist;
+	static CuckooHashMap<String,Pair<Integer,Integer>> hashoffset; 
+	static CuckooHashMap<String,Pair<String,Integer>> map;	
 	static Pair<Integer,Integer> pair;
-	public static int bytecount;
+	static int bytecount;
 	Client()
 	{	
 		listofhash=new ArrayList<String>();
 		hashlist=new CuckooHashMap<String,String>();
 		offsetlist=new CuckooHashMap<String,String>();
+		extensionlist=new CuckooHashMap<String,String>();
 		hashoffset=new CuckooHashMap<String,Pair<Integer,Integer>>();
 		map=new CuckooHashMap<String,Pair<String,Integer>>();
 		bytecount=0;
@@ -35,7 +48,8 @@ class Client
 	public static String getHash(byte[] b)
 	{
 		String result = "";
-       		for (int i=0; i < b.length; i++) 
+		int i;
+       		for (i=0; i < b.length; i++) 
 	  	{
            		result += Integer.toString( ( b[i] & 0xff ) + 0x100, 16);
       		}
@@ -97,8 +111,7 @@ class Client
 			fis.close();
 			bw.close();
 			fw.close();
-			CopyAttributes.copy(file.getAbsolutePath(),metapath);
-			SaveAttribute.Save(metapath,extension);
+			//extensionlist.put(metapath,extension);
 		}
 	}
 	public void SeparateDedup(List<String> dedup)throws Exception
@@ -145,12 +158,12 @@ class Client
 				ftpClient.connect(server,port);
 				ftpClient.enterLocalPassiveMode();
 				int reply = ftpClient.getReplyCode();
-
-	      if(!FTPReply.isPositiveCompletion(reply)) {
-		ftpClient.disconnect();
-		System.err.println("FTP server refused connection.");
-		System.exit(1);
-	      }
+				if(!FTPReply.isPositiveCompletion(reply)) 
+				{
+					ftpClient.disconnect();
+					System.err.println("FTP server refused connection.");
+					System.exit(1);
+				}
 				if(ftpClient.login(user,pass))
 				{
 					System.out.println("Successfull");
@@ -165,11 +178,11 @@ class Client
 						System.out.println(ftpClient.getReplyString());
 					}
 				}
-			else
-			{
-				System.out.println("Login failed");
-			} 
-			
+				else
+				{
+					System.out.println("Login failed");
+				} 
+				ftpClient.logout();
 		}
 		catch(Exception e)
 		{
@@ -180,13 +193,11 @@ class Client
 	{  
 		List<String> files=new ArrayList<String>();
 		List<String> duplicated;
-		files.add("Test/aa.mp3");
-		files.add("Test/ccc.mp3");
-		files.add("Test/a.png");
-		files.add("Test/sample.txt");
+		files.add("Test/aaa.mp3");
 		Client client=new Client();
 		client.getList(files);
 		Gson gson=new Gson();
+		extensionlist.put("Test/Server/aaa.src","mp3");
 		hashlist.put("put",gson.toJson(listofhash));		
 		String listsend=gson.toJson(hashlist),duped="";		
 		Socket s=new Socket("127.0.0.1",9999);  
@@ -203,6 +214,8 @@ class Client
 			client.SeparateDedup(duplicated);
 			listsend=gson.toJson(hashoffset);
 			offsetlist.put("process",listsend);
+			listsend=gson.toJson(extensionlist);
+			offsetlist.put("extension",listsend);
 			//System.out.println(gson.toJson(offsetlist));
 			s=new Socket("127.0.0.1",9999);  
 			din=new DataInputStream(s.getInputStream());  

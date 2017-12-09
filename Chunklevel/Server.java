@@ -1,11 +1,28 @@
-import java.net.ServerSocket;
-import java.net.Socket;  
-import java.io.*;  
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import java.util.*;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.RandomAccessFile;	
+import java.io.Reader;
+import java.io.Writer;
+import java.net.ServerSocket;
+import java.net.Socket;   
+import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
+import javax.xml.bind.DatatypeConverter;
+
 class DedupeProcess
 {
 	static String listrec=""; 	 
@@ -29,8 +46,7 @@ class DedupeProcess
 	
 	public String process(List<String> lists)
 	{		
-		List<String> duplicated=findduplicates(lists);
-		return gson.toJson(duplicated);
+		return gson.toJson(findduplicates(lists));
 	}
 }
 public class Server
@@ -38,12 +54,9 @@ public class Server
 	static CuckooHashMap<String,Pairing<Integer,Pair<Integer,Integer>>> map;
 	static Integer bytecount;
 	static DedupeProcess dedupe;
-	static CuckooHashMap<String,Pair<Integer,Integer>> hashoffset;
 	static Socket socket;
 	static DataInputStream din;
 	static DataOutputStream dout;
-	static CuckooHashMap<String,String> hashlist;
-	static List<String> listofhash;
 	static Gson gson=new Gson();
 	Server()
 	{
@@ -52,6 +65,7 @@ public class Server
 			if(new File("dedupe.txt").exists())
 			{
 				decompress();
+				System.gc();
 				Gson gson=new Gson(); 
 				Reader reader = new FileReader("dedupe.json");
 				map = gson.fromJson(reader, new TypeToken<CuckooHashMap<String,Pairing<Integer,Pair<Integer,Integer>>>>(){}.getType());
@@ -86,7 +100,7 @@ public class Server
 		os.close();
 		Writer wr=new FileWriter("current.txt");
 		wr.write(""+ map.Current_Length+"\n"+bytecount);
-		wr.close();		
+		wr.close();
 	}
 	public static void decompress() throws IOException
 	{
@@ -102,31 +116,88 @@ public class Server
 		fos.close();
 		gis.close();
 	}
-	static void Copynewvalues()throws Exception
+	public static void getFile(String mfile,String fileo)throws IOException
+	{
+		try
+		{
+			Reader reader=new FileReader(mfile);
+			FileOutputStream fos = new FileOutputStream(fileo);
+			//copy attributes
+			int r=0,l=0;
+			do
+			{
+				char[] chars = new char[48];
+				r=reader.read(chars,0,48);
+				if(r==48)
+				{
+					String str = String.valueOf(chars);
+					Pairing<Integer,Pair<Integer,Integer>> pair=map.get(str);
+					String position = String.valueOf(pair.getLeft());
+					long pos = (long)(Double.parseDouble(position));
+					String defile="dedupe" + pos/1000 + ".txt";
+					RandomAccessFile raf = new RandomAccessFile(defile, "r");
+					Pair<Integer,Integer> pair1=pair.getRight();
+					raf.seek(pair1.getLeft());
+					byte[] contentbuf=new byte[pair1.getRight()+1];
+					raf.read(contentbuf,0,pair1.getRight());					
+					System.out.println(pair1.getLeft()+""+pair1.getRight());
+					String content=RetrieveFile.decompressstring(contentbuf);
+					byte[] buf=DatatypeConverter.parseBase64Binary(content);
+					fos.write(buf);
+					raf.close();
+					System.out.println(str);
+				}
+			}while(r!=-1);			
+			fos.close();
+			reader.close();
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+			System.out.println("Exception :");
+		}
+		CopyAttributes.copy(mfile,fileo);
+	}
+	static void Copynewvalues(CuckooHashMap<String,Pair<Integer,Integer>> hashoffset)throws Exception
 	{
 		String dedupefile="dedupe"+map.Current_Length/1000+".txt";
 		FileOutputStream out = new FileOutputStream(dedupefile,true);
 		Pairing<Integer,Pair<Integer,Integer>> pair;
-		for(String e : hashoffset.keySet())
+		for(String hashval : hashoffset.keySet())
 		{
-			RandomAccessFile raf = new RandomAccessFile("Test/Server/sepdedupe.txt", "r");
-			Pair<Integer,Integer> pair1=hashoffset.get(e);
+			RandomAccessFile raf = new RandomAccessFile("sepdedupe.txt", "r");
+			Pair<Integer,Integer> pair1=hashoffset.get(hashval);
 			raf.seek(pair1.getLeft());
 			byte[] contentbuf=new byte[pair1.getRight()+1];
 			raf.read(contentbuf,0,pair1.getRight());
 			pair1=new Pair<Integer,Integer>(bytecount,pair1.getRight());
 			pair=new Pairing<Integer,Pair<Integer,Integer>>(map.Current_Length++,pair1);						
 			bytecount+=pair1.getRight()+1;
-			map.put(e,pair);
+			map.put(hashval,pair);
 			out.write(contentbuf);
 			raf.close();
-			System.out.println(map.get(e).getRight().getRight());
+			System.out.println(map.get(hashval).getRight().getRight());
 		}
 		out.close();
 	}
+	static void CopyExtension(CuckooHashMap<String,String> extensionlist)throws Exception
+	{
+		for(String filename : extensionlist.keySet())
+		{
+			SaveAttribute.Save(filename,extensionlist.get(filename));
+		}	
+	}
+	static void RetrieveFiles(List<String> listoffiles)throws Exception
+	{
+		for(String file : listoffiles)
+		{
+			String path="Test/Server/"+RetrieveFile.stripExtension(file)+".src";
+			getFile(path,"Test/Server/"+file);		
+		}
+	}
 	static Runnable runnable=new Runnable()
 	{
-		Socket rsocket;
+		Socket rsocket;	
 		DataInputStream rdin;
 		DataOutputStream rdout;
 		public void run()
@@ -141,18 +212,28 @@ public class Server
 				System.out.println(listrec); 
 				if(listrec.contains("put"))
 				{
-					hashlist=gson.fromJson(listrec, new TypeToken<CuckooHashMap<String,String>>(){}.getType());	
-					listofhash=gson.fromJson(hashlist.get("put"), new TypeToken<List<String>>(){}.getType());
+					CuckooHashMap<String,String> hashlist=gson.fromJson(listrec, new TypeToken<CuckooHashMap<String,String>>(){}.getType());	
+					List<String> listofhash=gson.fromJson(hashlist.get("put"), new TypeToken<List<String>>(){}.getType());
 					String result=dedupe.process(listofhash);
 					System.out.println(result+"Hello");
 					rdout.writeUTF(result);  
 					rdout.flush();					
 				}
+				else if(listrec.contains("download"))
+				{
+					CuckooHashMap<String,String> filelist=gson.fromJson(listrec, new TypeToken<CuckooHashMap<String,String>>(){}.getType());	
+					List<String> listoffiles=gson.fromJson(filelist.get("download"), new TypeToken<List<String>>(){}.getType());
+					RetrieveFiles(listoffiles);
+					rdout.writeUTF("success");  
+					rdout.flush();
+				}
 				else
 				{
-					hashlist=gson.fromJson(listrec, new TypeToken<CuckooHashMap<String,String>>(){}.getType());
-					hashoffset=gson.fromJson(hashlist.get("process"), new TypeToken<CuckooHashMap<String,Pair<Integer,Integer>>>(){}.getType());
-					Copynewvalues();	
+					CuckooHashMap<String,String> hashlist=gson.fromJson(listrec, new TypeToken<CuckooHashMap<String,String>>(){}.getType());
+					CuckooHashMap<String,Pair<Integer,Integer>> hashoffset=gson.fromJson(hashlist.get("process"), new TypeToken<CuckooHashMap<String,Pair<Integer,Integer>>>(){}.getType());
+					CuckooHashMap<String,String> extensionlist=gson.fromJson(hashlist.get("extension"), new TypeToken<CuckooHashMap<String,String>>(){}.getType());
+					CopyExtension(extensionlist);
+					Copynewvalues(hashoffset);	
 					rdout.writeUTF("Hello");  
 					rdout.flush();
 				}

@@ -67,7 +67,7 @@ public class RetrieveFile
 		try
 		{
 			Reader reader=new FileReader(mfile);
-			FileOutputStream fos = new FileOutputStream(fileo,true);
+			FileOutputStream fos = new FileOutputStream(fileo);
 			//copy attributes
 			int r=0,l=0;
 			do
@@ -151,7 +151,7 @@ public class RetrieveFile
 	public static void main(String args[]) throws Exception
 	{
 		RetrieveFile f=new RetrieveFile();
-		String opath=new String("Test/Server/sample.src");  
+		String opath=new String("Test/Server/aaa.src");  
 		String path=stripExtension(opath)+"."+RetrieveAttribute.Retrieve(opath);
 		getFile(opath,path);
 	}
