@@ -177,11 +177,16 @@ class Client
 						System.out.println(file.getParent()+"/Server/"+stripExtension(file.getName())+".src");
 						System.out.println(ftpClient.getReplyString());
 					}
+					InputStream in = new FileInputStream("sepdedupe.txt");
+					ftpClient.setFileType(FTP.BINARY_FILE_TYPE);		
+		        		ftpClient.enterLocalPassiveMode();
+					boolean Store = ftpClient.storeFile("/home/sridharan/Cloud-Deduplication/Chunklevel/sepdedupe.txt", in);
 				}
 				else
 				{
 					System.out.println("Login failed");
 				} 
+				
 				ftpClient.logout();
 		}
 		catch(Exception e)
@@ -193,14 +198,14 @@ class Client
 	{  
 		List<String> files=new ArrayList<String>();
 		List<String> duplicated;
-		files.add("Test/aaa.mp3");
+		files.add("Test/bb.mp3");
 		Client client=new Client();
 		client.getList(files);
 		Gson gson=new Gson();
-		extensionlist.put("Test/Server/aaa.src","mp3");
+		extensionlist.put("Test/Server/bb.src","mp3");
 		hashlist.put("put",gson.toJson(listofhash));		
 		String listsend=gson.toJson(hashlist),duped="";		
-		Socket s=new Socket("127.0.0.1",9999);  
+		Socket s=new Socket("192.168.1.101",9999);  
 		DataInputStream din=new DataInputStream(s.getInputStream());  
 		DataOutputStream dout=new DataOutputStream(s.getOutputStream());  		  
 		//while(!listsend.equals("stop"))
@@ -217,7 +222,7 @@ class Client
 			listsend=gson.toJson(extensionlist);
 			offsetlist.put("extension",listsend);
 			//System.out.println(gson.toJson(offsetlist));
-			s=new Socket("127.0.0.1",9999);  
+			s=new Socket("192.168.1.101",9999);  
 			din=new DataInputStream(s.getInputStream());  
 			dout=new DataOutputStream(s.getOutputStream()); 
 			UploadFiles(files);

@@ -38,7 +38,8 @@ public class ClientDownload
 				{
 					ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
 					ftpClient.enterLocalPassiveMode();           				
-           				String downloadFile = "/home/sridharan/Cloud-Deduplication/Chunklevel/Test/"+filename;
+           				String downloadFile = "/home/sridharan/Cloud-Deduplication/Chunklevel/Test/Server/"+filename;
+						System.out.println(downloadFile);
             				 OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(filename));
             				boolean success = ftpClient.retrieveFile(downloadFile, outputStream);
 					File permit=new File(filename);
@@ -56,11 +57,11 @@ public class ClientDownload
 	}
 	public static void main(String args[])throws Exception
 	{
-		Socket s=new Socket("127.0.0.1",9999);  
+		Socket s=new Socket("192.168.1.101",9999);  
 		DataInputStream din=new DataInputStream(s.getInputStream());  
 		DataOutputStream dout=new DataOutputStream(s.getOutputStream());
 		listoffiles=new ArrayList<String>();
-		listoffiles.add("ccc.mp3");
+		listoffiles.add("bb.mp3");
 		Gson gson=new Gson();
 		hashlist=new CuckooHashMap<String,String>();		
 		hashlist.put("download",gson.toJson(listoffiles));		
