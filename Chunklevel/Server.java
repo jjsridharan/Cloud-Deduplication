@@ -122,7 +122,6 @@ public class Server
 		{
 			Reader reader=new FileReader(mfile);
 			FileOutputStream fos = new FileOutputStream(fileo);
-			//copy attributes
 			int r=0,l=0;
 			do
 			{
@@ -158,7 +157,7 @@ public class Server
 		}
 		CopyAttributes.copy(mfile,fileo);
 	}
-	static void Copynewvalues(CuckooHashMap<String,Pair<Integer,Integer>> hashoffset)throws Exception
+	static synchronized void Copynewvalues(CuckooHashMap<String,Pair<Integer,Integer>> hashoffset)throws Exception
 	{
 		String dedupefile="dedupe"+map.Current_Length/1000+".txt";
 		FileOutputStream out = new FileOutputStream(dedupefile,true);
@@ -225,6 +224,14 @@ public class Server
 					List<String> listoffiles=gson.fromJson(filelist.get("download"), new TypeToken<List<String>>(){}.getType());
 					RetrieveFiles(listoffiles);
 					rdout.writeUTF("success");  
+					rdout.flush();
+				}
+				else if(listrec.contains("list"))
+				{
+					CuckooHashMap<String,String> list=gson.fromJson(listrec, new TypeToken<CuckooHashMap<String,String>>(){}.getType());	
+					String path=list.get("list");
+					String result=ListFile.ListFiles(path);
+					rdout.writeUTF(result);  
 					rdout.flush();
 				}
 				else
