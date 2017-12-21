@@ -157,14 +157,14 @@ public class Server
 		}
 		CopyAttributes.copy(mfile,fileo);
 	}
-	static synchronized void Copynewvalues(CuckooHashMap<String,Pair<Integer,Integer>> hashoffset)throws Exception
+	static synchronized void Copynewvalues(String base,CuckooHashMap<String,Pair<Integer,Integer>> hashoffset)throws Exception
 	{
 		String dedupefile="dedupe"+map.Current_Length/1000+".txt";
 		FileOutputStream out = new FileOutputStream(dedupefile,true);
 		Pairing<Integer,Pair<Integer,Integer>> pair;
 		for(String hashval : hashoffset.keySet())
 		{
-			RandomAccessFile raf = new RandomAccessFile("sepdedupe.txt", "r");
+			RandomAccessFile raf = new RandomAccessFile(base+"sepdedupe.txt", "r");
 			Pair<Integer,Integer> pair1=hashoffset.get(hashval);
 			raf.seek(pair1.getLeft());
 			byte[] contentbuf=new byte[pair1.getRight()+1];
@@ -178,6 +178,8 @@ public class Server
 			System.out.println(map.get(hashval).getRight().getRight());
 		}
 		out.close();
+		File f=new File(base+"sepdedupe.txt");
+		f.delete();
 	}
 	static void CopyExtension(CuckooHashMap<String,String> extensionlist)throws Exception
 	{
@@ -186,12 +188,12 @@ public class Server
 			SaveAttribute.Save(filename,extensionlist.get(filename));
 		}	
 	}
-	static void RetrieveFiles(List<String> listoffiles)throws Exception
+	static void RetrieveFiles(String base,List<String> listoffiles)throws Exception
 	{
 		for(String file : listoffiles)
 		{
-			String path="Test/Server/"+RetrieveFile.stripExtension(file)+".src";
-			getFile(path,"Test/Server/"+file);		
+			String path=base+RetrieveFile.stripExtension(file)+".src";
+			getFile(path,base+file);		
 		}
 	}
 	static Runnable runnable=new Runnable()
@@ -222,7 +224,8 @@ public class Server
 				{
 					CuckooHashMap<String,String> filelist=gson.fromJson(listrec, new TypeToken<CuckooHashMap<String,String>>(){}.getType());	
 					List<String> listoffiles=gson.fromJson(filelist.get("download"), new TypeToken<List<String>>(){}.getType());
-					RetrieveFiles(listoffiles);
+					String base=filelist.get("base");
+					RetrieveFiles(base,listoffiles);
 					rdout.writeUTF("success");  
 					rdout.flush();
 				}
@@ -234,13 +237,14 @@ public class Server
 					rdout.writeUTF(result);  
 					rdout.flush();
 				}
-				else
+				else if(listrec.contains("process"))
 				{
 					CuckooHashMap<String,String> hashlist=gson.fromJson(listrec, new TypeToken<CuckooHashMap<String,String>>(){}.getType());
 					CuckooHashMap<String,Pair<Integer,Integer>> hashoffset=gson.fromJson(hashlist.get("process"), new TypeToken<CuckooHashMap<String,Pair<Integer,Integer>>>(){}.getType());
 					CuckooHashMap<String,String> extensionlist=gson.fromJson(hashlist.get("extension"), new TypeToken<CuckooHashMap<String,String>>(){}.getType());
+					String base=hashlist.get("base");
 					CopyExtension(extensionlist);
-					Copynewvalues(hashoffset);	
+					Copynewvalues(base,hashoffset);	
 					rdout.writeUTF("Hello");  
 					rdout.flush();
 				}

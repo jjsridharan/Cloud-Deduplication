@@ -17,14 +17,15 @@ import org.apache.commons.net.ftp.FTPReply;
 public class DownloadFiles
 {
 	
-	static void DownloadFiles(List<String> listoffiles)throws Exception
+	static void DownloadFiles(String server,String user,String pass,String base,List<String> listoffiles)throws Exception
 	{
-		Socket s=new Socket("127.0.0.1",9999);  
+		Socket s=new Socket(server,9999);  
 		DataInputStream din=new DataInputStream(s.getInputStream());  
 		DataOutputStream dout=new DataOutputStream(s.getOutputStream());		
 		Gson gson=new Gson();
 		CuckooHashMap<String,String> hashlist=new CuckooHashMap<String,String>();		
-		hashlist.put("download",gson.toJson(listoffiles));		
+		hashlist.put("download",gson.toJson(listoffiles));
+		hashlist.put("base",base);
 		String listsend=gson.toJson(hashlist),result;
 		dout.writeUTF(listsend);  
 		dout.flush();
@@ -33,7 +34,6 @@ public class DownloadFiles
 		{
 			for(String filename : listoffiles)
 			{
-				String server="127.0.0.1",user="sridharan",pass="student";
 					int port=21;
 					FTPClient ftpClient = new FTPClient();
 					ftpClient.connect(server,port);
@@ -49,7 +49,7 @@ public class DownloadFiles
 					{
 						ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
 						ftpClient.enterLocalPassiveMode();           				
-		   				String downloadFile = "/home/sridharan/Cloud-Deduplication/Chunklevel/Test/Server/"+filename;
+		   				String downloadFile = base+filename;
 							System.out.println(downloadFile);
 		    				 OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(filename));
 		    				boolean success = ftpClient.retrieveFile(downloadFile, outputStream);
@@ -76,6 +76,6 @@ public class DownloadFiles
 		List<String> listoffiles;
 		listoffiles=new ArrayList<String>();
 		listoffiles.add("aaa.mp3");
-		DownloadFiles(listoffiles);
+		DownloadFiles("127.0.0.1","sridharan","student","/home/sridharan/Server/User1/",listoffiles);
 	}	
 }

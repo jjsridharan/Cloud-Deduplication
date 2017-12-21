@@ -111,7 +111,7 @@ public class Upload
 			fis.close();
 			bw.close();
 			fw.close();
-			//extensionlist.put(metapath,extension);
+			extensionlist.put(metapath,extension);
 		}
 	}
 	public void SeparateDedup(List<String> dedup)throws Exception
@@ -148,11 +148,10 @@ public class Upload
 		gzip.close();
 		return obj.toByteArray();
 	}
-	static void UploadFileList(List<String> files)
+	static void UploadFileList(String server,String user,String pass,String base,List<String> files)
 	{
 		try
-		{
-				String server="127.0.0.1",user="sridharan",pass="student";
+		{				
 				int port=21;
 				FTPClient ftpClient = new FTPClient();
 				ftpClient.connect(server,port);
@@ -173,14 +172,16 @@ public class Upload
 						InputStream in = new FileInputStream(file.getParent()+"/"+stripExtension(file.getName())+".src");
 		       				ftpClient.setFileType(FTP.BINARY_FILE_TYPE);		
 		        			ftpClient.enterLocalPassiveMode();
-		        			boolean Store = ftpClient.storeFile("/home/sridharan/Cloud-Deduplication/Chunklevel/Test/Server/"+stripExtension(file.getName())+".src", in);
-						System.out.println(file.getParent()+"/Server/"+stripExtension(file.getName())+".src");
+		        			boolean Store = ftpClient.storeFile(base+stripExtension(file.getName())+".src", in);
 						System.out.println(ftpClient.getReplyString());
+						file.delete();
 					}
 					InputStream in = new FileInputStream("sepdedupe.txt");
 					ftpClient.setFileType(FTP.BINARY_FILE_TYPE);		
 		        		ftpClient.enterLocalPassiveMode();
-					//boolean Store = ftpClient.storeFile("/home/sridharan/Cloud-Deduplication/Chunklevel/sepdedupe.txt", in);
+					boolean Store = ftpClient.storeFile(base+"sepdedupe.txt", in);
+					File f=new File("sepdedupe.txt");
+					f.delete();
 				}
 				else
 				{
@@ -194,30 +195,30 @@ public class Upload
 			System.out.println(e);
 		}
 	}
-	public static void UploadFiles(List<String> files)throws Exception
+	public static void UploadFiles(String ip,String user,String pass,String base,List<String> files)throws Exception
 	{		
 		Upload client=new Upload();
 		client.getList(files);
 		Gson gson=new Gson();
-		extensionlist.put("Test/Server/aaa.src","mp3");
-		hashlist.put("put",gson.toJson(listofhash));		
+		hashlist.put("put",gson.toJson(listofhash));	
 		String listsend=gson.toJson(hashlist),duped="";		
-		Socket s=new Socket("127.0.0.1",9999);  
+		Socket s=new Socket(ip,9999);  
 		DataInputStream din=new DataInputStream(s.getInputStream());  
 		DataOutputStream dout=new DataOutputStream(s.getOutputStream());  		  
 		dout.writeUTF(listsend);  
 		dout.flush();
 		duped=din.readUTF();
-		duplicated=gson.fromJson(duped, new TypeToken<List<String>>(){}.getType());
+		List<String> duplicated=gson.fromJson(duped, new TypeToken<List<String>>(){}.getType());
 		client.SeparateDedup(duplicated);
 		listsend=gson.toJson(hashoffset);
 		offsetlist.put("process",listsend);
 		listsend=gson.toJson(extensionlist);
 		offsetlist.put("extension",listsend);
-		s=new Socket("127.0.0.1",9999);  
+		offsetlist.put("base",base);
+		s=new Socket(ip,9999);  
 		din=new DataInputStream(s.getInputStream());  
 		dout=new DataOutputStream(s.getOutputStream()); 
-		UploadFileList(files);
+		UploadFileList(ip,user,pass,base,files);
 		dout.writeUTF(gson.toJson(offsetlist));
 		dout.flush();
 		duped=din.readUTF();
@@ -227,7 +228,7 @@ public class Upload
 	public static void main(String args[])throws Exception
 	{  
 		List<String> files=new ArrayList<String>();
-		List<String> duplicated;
 		files.add("Test/aaa.mp3");
+		UploadFiles("127.0.0.1","sridharan","student","/home/sridharan/Server/User1/",files);
 	}
 }  

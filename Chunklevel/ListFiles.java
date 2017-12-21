@@ -11,13 +11,13 @@ import org.apache.commons.net.ftp.FTPFile;
 
 public class ListFiles
 {
-	public static void ListFilesandDirectory(String path)throws Exception
+	public static void ListFilesandDirectory(String server,String path)throws Exception
 	{
 		CuckooHashMap<String,String> list=new CuckooHashMap<String,String>();
 		list.put("list",path);
 		Gson gson=new Gson();		
 		String listsend=gson.toJson(list),result="";		
-		Socket s=new Socket("127.0.0.1",9999);  
+		Socket s=new Socket(server,9999);  
 		DataInputStream din=new DataInputStream(s.getInputStream());  
 		DataOutputStream dout=new DataOutputStream(s.getOutputStream());  		  
 		dout.writeUTF(listsend);  
@@ -27,6 +27,6 @@ public class ListFiles
 	}
 	public static void main(String[] args)throws Exception
 	{
-		ListFilesandDirectory("/home/sridharan/Cloud-Deduplication/Chunklevel/Test/Server/");
+		ListFilesandDirectory("127.0.0.1","/home/sridharan/Server/User1/");
 	}
 }

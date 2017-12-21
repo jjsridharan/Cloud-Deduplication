@@ -11,9 +11,8 @@ public class DeleteFiles
 		if (pos == -1) return str;
 		return str.substring(0, pos);
 	}
-    public static void DeleteFileList(List<String> files)throws Exception
+    public static void DeleteFileList(String server,String user,String pass,List<String> files)throws Exception
 	{
-		String server="127.0.0.1",user="sridharan",pass="student";
 		int port=21;
 		FTPClient ftpClient = new FTPClient();
 		ftpClient.connect(server,port);
@@ -44,7 +43,7 @@ public class DeleteFiles
     public static void main(String[] args)throws Exception
     {
 		List<String> list=new ArrayList<String>();
-		list.add("/home/sridharan/Cloud-Deduplication/Chunklevel/Test/Server/aa.mp3");
-		DeleteFileList(list);
+		list.add("/home/sridharan/Server/User1/aa.mp3");
+		DeleteFileList("127.0.0.1","sridharan","student",list);
     }
 }
