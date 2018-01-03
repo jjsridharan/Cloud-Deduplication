@@ -12,6 +12,7 @@ import java.io.InputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.net.Socket;
+import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;  
@@ -219,6 +220,51 @@ public class Upload
 		}
 		return filelist;
 	}
+	public static String ReedSolomonFunc(String listsend)
+	{
+		
+		int DATA_SHARDS = 20;
+		int PARITY_SHARDS = 4;
+		int TOTAL_SHARDS = 24;
+
+		int BYTES_IN_INT = 4;
+		int fileSize=listsend.length()+1;
+		int shardSize;
+		final int storedSize = fileSize + BYTES_IN_INT;
+		shardSize = (storedSize + DATA_SHARDS - 1) / DATA_SHARDS;
+  		final int bufferSize = shardSize * DATA_SHARDS;
+        	final byte [] allBytes = new byte[bufferSize];
+        	System.out.println(allBytes.length);
+		final byte [] temp = listsend.getBytes();
+		ByteBuffer.wrap(allBytes).putInt(fileSize);
+		
+		for(int i=4;i<temp.length+4;i++)
+			allBytes[i]=temp[i-4];
+		
+		byte [] [] shards = new byte [TOTAL_SHARDS] [shardSize];
+		for (int i = 0; i < DATA_SHARDS; i++) {
+            		System.arraycopy(allBytes, i * shardSize, shards[i], 0, shardSize);
+        	}
+
+		//Encoder called
+		ReedSolomon reedSolomon = ReedSolomon.create(DATA_SHARDS, PARITY_SHARDS);
+        	reedSolomon.encodeParity(shards, 0, shardSize);
+		//Encoded
+		
+		String str2="";
+		char shardNumber='a';
+		int initlen=0;
+		for (int i = 0; i < TOTAL_SHARDS; i++) {
+		str2=str2+"###"+shardNumber+"###"+DatatypeConverter.printBase64Binary(shards[i]);
+		if(initlen==0)
+			initlen=str2.length()-6;
+		System.out.println("\n Shard Length : "+shards[i].length+" String Length : "+initlen);
+	    shardNumber++;
+		}
+	
+		str2=Integer.toString(initlen)+str2;
+		return str2;
+	}
 	public static void UploadFiles(String ip,String user,String pass,String base,List<String> files)throws Exception
 	{		
 		Upload client=new Upload();
@@ -230,6 +276,7 @@ public class Upload
 		DataInputStream din=new DataInputStream(s.getInputStream());  
 		DataOutputStream dout=new DataOutputStream(s.getOutputStream());  		  
 		bytesuploaded+=listsend.length();
+		listsend=ReedSolomonFunc(listsend);
 		dout.writeUTF(listsend);		 
 		dout.flush();
 		duped=din.readUTF();
@@ -246,6 +293,7 @@ public class Upload
 		UploadFileList(ip,user,pass,base,files);
 		bytesuploaded+=listsend.length();
 		listsend=gson.toJson(offsetlist);
+		listsend=ReedSolomonFunc(listsend);
 		dout.writeUTF(listsend);
 		dout.flush();
 		duped=din.readUTF();
@@ -255,7 +303,7 @@ public class Upload
 	public static void main(String args[])throws Exception
 	{  
 		List<String> files=addfiles("G:\\Test\\");
-		UploadFiles("192.168.43.52","tamizh","senthamizhan123","/home/tamizh/Server/User1/",files);
+		UploadFiles("192.168.117.88","student","student","/home/student/Server/User1/",files);
 		System.out.println("Number of Bytes Uploaded :"+bytesuploaded);
 	}
 }  

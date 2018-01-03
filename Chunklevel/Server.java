@@ -10,7 +10,8 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.RandomAccessFile;	
+import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;	
 import java.io.Reader;
 import java.io.Writer;
 import java.net.ServerSocket;
@@ -25,6 +26,11 @@ import javax.xml.bind.DatatypeConverter;
 
 class DedupeProcess
 {
+	public static final int DATA_SHARDS = 20;
+	public static final int PARITY_SHARDS = 4;
+  	public static final int TOTAL_SHARDS = 24;
+   	public static final int BYTES_IN_INT = 4;
+
 	static String listrec=""; 	 
 	static Gson gson=new Gson();
 	CuckooHashMap<String,Pairing<Integer,Pair<Integer,Integer>>> map;	
@@ -51,6 +57,11 @@ class DedupeProcess
 }
 public class Server
 {  
+	public static final int DATA_SHARDS = 20;
+	public static final int PARITY_SHARDS = 4;
+  	public static final int TOTAL_SHARDS = 24;
+   	public static final int BYTES_IN_INT = 4;
+
 	static CuckooHashMap<String,Pairing<Integer,Pair<Integer,Integer>>> map;
 	static Integer bytecount;
 	static DedupeProcess dedupe;
@@ -196,11 +207,122 @@ public class Server
 			getFile(path,base+file);		
 		}
 	}
+	
+	
+	static String ReedSolomon(String str2)
+	{
+	
+			 	String receiveMessage=str2;
+				final byte [] [] shards = new byte [TOTAL_SHARDS] [];
+		        final boolean [] shardPresent = new boolean [TOTAL_SHARDS];
+		        int shardSize = 0;
+		        int shardCount = 0;
+
+
+				byte p[] = DatatypeConverter.parseBase64Binary(str2);
+
+				int kt=(p.length-24)/24;
+				//shardSize=9;
+				System.out.println("\n\nShard Size : "+shardSize+"\n");
+				int pt=0;
+				int number;
+				int byte_size=0;
+				int j=0;
+				int size=0,final_size=0;
+				String temp="";
+				while(receiveMessage.charAt(j)!='#')
+				{
+					temp=temp+receiveMessage.charAt(j);
+					j++;
+				}
+				j=j+3;
+				System.out.println("\n\n"+temp+"\n\n");
+				shardSize=Integer.parseInt(temp);
+				shardSize-=1;
+				int shardNumber;
+				String str3;
+				for(int i=0;i<24;i++)
+				{
+					str3="";
+					
+					shardNumber = receiveMessage.charAt(j)-'a';
+					System.out.println(j+"     "+receiveMessage.charAt(j)+"    "+shardNumber);
+					j=j+4;
+					size=0;
+					for(;j<receiveMessage.length()&&receiveMessage.charAt(j)!='#';j++)
+					{
+						str3=str3+receiveMessage.charAt(j);
+						size++;
+					}
+					System.out.println(shardSize+"    "+size);
+					j = j+3;
+
+					shards[i]=DatatypeConverter.parseBase64Binary(str3);
+					shardPresent[i]=true;
+					shardCount+=1;
+					byte_size=shards[i].length;
+					System.out.println("String :            "+str3);
+					System.out.println("Byte : "+byte_size);
+					if(size<shardSize)
+					{
+						shardPresent[i]=false;
+						shardCount--;
+					}
+				}
+
+
+			System.out.println(shardCount);
+		        if (shardCount < DATA_SHARDS) {
+		            System.out.println("Not enough shards present");
+		            return "";
+		        }
+
+			shardSize=byte_size;
+			System.out.println(" Final Shard Size : "+shardSize);
+				for (int i = 0; i < TOTAL_SHARDS; i++) {
+            		if (!shardPresent[i]) {
+                	shards[i] = new byte [shardSize];
+            		}
+        		}
+        		
+        		
+
+				//Calling Reed				
+		        ReedSolomon reedSolomon = ReedSolomon.create(DATA_SHARDS, PARITY_SHARDS);
+		        reedSolomon.decodeMissing(shards, shardPresent, 0, shardSize);
+				//Decoded byte array
+
+			
+		        byte [] allBytes = new byte [shardSize * DATA_SHARDS];
+		        for (int i = 0; i < DATA_SHARDS; i++) {
+	            System.arraycopy(shards[i], 0, allBytes, shardSize * i, shardSize);
+		        }
+				System.out.println(allBytes.length);
+				int fileSize = ByteBuffer.wrap(allBytes).getInt();
+				String list_temp=new String(allBytes);
+				
+				
+				int start=list_temp.indexOf('{');
+				int end=list_temp.lastIndexOf('}');
+				
+				String listrec;
+				listrec=list_temp.substring(start,end+1);
+				System.out.println("\n\n\n"+"Final Output: \n"+listrec);
+				return listrec;
+		}
+	
+	
+	
 	static Runnable runnable=new Runnable()
 	{
 		Socket rsocket;	
 		DataInputStream rdin;
 		DataOutputStream rdout;
+		public static final int DATA_SHARDS = 20;
+	    	public static final int PARITY_SHARDS = 4;
+	  	public static final int TOTAL_SHARDS = 24;
+	    	public static final int BYTES_IN_INT = 4;
+
 		public void run()
 		{
 			try
@@ -209,8 +331,15 @@ public class Server
 				dedupe=new DedupeProcess(map);
 				rdin=din;
 				rdout=dout;
-				String listrec=rdin.readUTF(); 
-				System.out.println(listrec); 
+				String str2;
+				str2=rdin.readUTF(); 
+				System.out.println(str2+"\n\n"); 
+				
+				
+				String listrec=ReedSolomon(str2);
+				
+				System.out.println("\n\n---------------------------------------------------------\n\n AFTER REED SOLOMON \n\n -----------------------------------\n\n"+listrec);
+				
 				if(listrec.contains("put"))
 				{
 					CuckooHashMap<String,String> hashlist=gson.fromJson(listrec, new TypeToken<CuckooHashMap<String,String>>(){}.getType());	
