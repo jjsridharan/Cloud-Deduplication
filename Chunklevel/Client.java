@@ -10,15 +10,11 @@ public class Client
 		String url = "https://clouddeduplication.000webhostapp.com/register.php";
  		URL obj = new URL(url);
 		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-
-		//add reuqest header
 		con.setRequestMethod("POST");
 		
 		con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
 
 		String urlParameters = "username=hi&password=hello&name=nji";
-
-		// Send post request
 		con.setDoOutput(true);
 		DataOutputStream wr = new DataOutputStream(con.getOutputStream());
 		wr.writeBytes(urlParameters);

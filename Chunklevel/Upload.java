@@ -29,15 +29,19 @@ import org.apache.commons.net.ftp.FTPReply;
 
 public class Upload
 {  
-	static List<String> listofhash;
+	static List<String> fileslist,listhashes;
+	static CuckooHashMap<String,String> listofhash;
 	static CuckooHashMap<String,String> hashlist,offsetlist,extensionlist;
 	static CuckooHashMap<String,Pair<Integer,Integer>> hashoffset; 
 	static CuckooHashMap<String,Pair<String,Integer>> map;	
 	static Pair<Integer,Integer> pair;
 	static int bytecount;
+	static long bytesuploaded=0;
 	Upload()
 	{	
-		listofhash=new ArrayList<String>();
+		listofhash=new CuckooHashMap<String,String>();
+		listhashes=new ArrayList<String>();
+		fileslist=new ArrayList<String>();
 		hashlist=new CuckooHashMap<String,String>();
 		offsetlist=new CuckooHashMap<String,String>();
 		extensionlist=new CuckooHashMap<String,String>();
@@ -71,7 +75,7 @@ public class Upload
 		bytecount+=ba.length;
 		return ba;
 	}
-	void getList(List<String> files)throws Exception
+	void getList(String base,List<String> files)throws Exception
 	{
 		MessageDigest mesdigest;
 		InputStream fis;
@@ -86,7 +90,7 @@ public class Upload
 			File file=new File(filename);
 			index = (file.getName()).lastIndexOf('.');
 			String extension=(file.getName()).substring(index+1);
-			System.out.println(file.getName());		
+			System.out.println("Getting Hash Values for "+file.getName());		
 			String metapath=file.getParent()+"/"+stripExtension(file.getName())+".src";
 			File metafile=new File(metapath);
 			metafile.createNewFile();
@@ -103,7 +107,11 @@ public class Upload
 					mesdigest.update(b,0,numbytes);
 					hashvalue=getHash(mesdigest.digest());
 					bw.write(hashvalue);
-					listofhash.add(hashvalue);
+					if(listofhash.get(hashvalue)==null)
+					{
+					listofhash.put(hashvalue,"true");
+					listhashes.add(hashvalue);
+					}
 					identity=new Pair<String,Integer>(filename,new Integer(count++));
 					map.put(hashvalue,identity);
 				}
@@ -111,7 +119,9 @@ public class Upload
 			fis.close();
 			bw.close();
 			fw.close();
+			metapath=base+"/"+stripExtension(file.getName())+".src";
 			extensionlist.put(metapath,extension);
+			fileslist.add(metapath);
 		}
 	}
 	public void SeparateDedup(List<String> dedup)throws Exception
@@ -120,6 +130,7 @@ public class Upload
 		Pair<String,Integer> identity;
 		RandomAccessFile raf;		
 		int numbytes;
+		System.out.println("Seperating missing hash values...");
 		for(String iterate : dedup)
 		{
 			identity=map.get(iterate);
@@ -127,10 +138,8 @@ public class Upload
 			raf = new RandomAccessFile(identity.getLeft(), "r");
 			raf.seek((identity.getRight()*4194304));
 			numbytes=raf.read(b);
-			System.out.println(numbytes);
 			out.write(ConvertFormat(numbytes,b));
 			hashoffset.put(iterate,pair);
-			System.out.println(pair.getLeft()+" "+pair.getRight());
 			raf.close();	
 		}
 		out.close();
@@ -169,11 +178,14 @@ public class Upload
 					for(String i : files)
 					{
 						File file=new File(i);
-						InputStream in = new FileInputStream(file.getParent()+"/"+stripExtension(file.getName())+".src");
-		       				ftpClient.setFileType(FTP.BINARY_FILE_TYPE);		
+						InputStream in = new FileInputStream(file.getParent()+"//"+stripExtension(file.getName())+".src");
+						ftpClient.setFileType(FTP.BINARY_FILE_TYPE);		
 		        			ftpClient.enterLocalPassiveMode();
 		        			boolean Store = ftpClient.storeFile(base+stripExtension(file.getName())+".src", in);
 						System.out.println(ftpClient.getReplyString());
+						file=new File(file.getParent()+"/"+stripExtension(file.getName())+".src");
+						System.out.println(file.getParent()+"/"+stripExtension(file.getName())+".src");
+						bytesuploaded+=file.length();
 						file.delete();
 					}
 					InputStream in = new FileInputStream("sepdedupe.txt");
@@ -181,6 +193,7 @@ public class Upload
 		        		ftpClient.enterLocalPassiveMode();
 					boolean Store = ftpClient.storeFile(base+"sepdedupe.txt", in);
 					File f=new File("sepdedupe.txt");
+					bytesuploaded+=f.length();
 					f.delete();
 				}
 				else
@@ -195,17 +208,29 @@ public class Upload
 			System.out.println(e);
 		}
 	}
+	public static List<String> addfiles(String path)throws Exception
+	{
+		List<String> filelist=new ArrayList<String>();
+		File[] files= new File(path).listFiles();
+		for(File file :files)
+		{
+			filelist.add(file.getAbsolutePath());
+			System.out.println(file.getAbsolutePath());
+		}
+		return filelist;
+	}
 	public static void UploadFiles(String ip,String user,String pass,String base,List<String> files)throws Exception
 	{		
 		Upload client=new Upload();
-		client.getList(files);
+		client.getList(base,files);
 		Gson gson=new Gson();
-		hashlist.put("put",gson.toJson(listofhash));	
+		hashlist.put("put",gson.toJson(listhashes));	
 		String listsend=gson.toJson(hashlist),duped="";		
 		Socket s=new Socket(ip,9999);  
 		DataInputStream din=new DataInputStream(s.getInputStream());  
 		DataOutputStream dout=new DataOutputStream(s.getOutputStream());  		  
-		dout.writeUTF(listsend);  
+		bytesuploaded+=listsend.length();
+		dout.writeUTF(listsend);		 
 		dout.flush();
 		duped=din.readUTF();
 		List<String> duplicated=gson.fromJson(duped, new TypeToken<List<String>>(){}.getType());
@@ -219,16 +244,18 @@ public class Upload
 		din=new DataInputStream(s.getInputStream());  
 		dout=new DataOutputStream(s.getOutputStream()); 
 		UploadFileList(ip,user,pass,base,files);
-		dout.writeUTF(gson.toJson(offsetlist));
+		bytesuploaded+=listsend.length();
+		listsend=gson.toJson(offsetlist);
+		dout.writeUTF(listsend);
 		dout.flush();
 		duped=din.readUTF();
-		dout.close();  
+		dout.close(); 
 		s.close();  
 	}
 	public static void main(String args[])throws Exception
 	{  
-		List<String> files=new ArrayList<String>();
-		files.add("Test/aaa.mp3");
-		UploadFiles("127.0.0.1","sridharan","student","/home/sridharan/Server/User1/",files);
+		List<String> files=addfiles("G:\\Test\\");
+		UploadFiles("192.168.43.52","tamizh","senthamizhan123","/home/tamizh/Server/User1/",files);
+		System.out.println("Number of Bytes Uploaded :"+bytesuploaded);
 	}
 }  

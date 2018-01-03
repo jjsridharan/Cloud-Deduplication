@@ -75,7 +75,7 @@ public class DownloadFiles
 	{
 		List<String> listoffiles;
 		listoffiles=new ArrayList<String>();
-		listoffiles.add("aaa.mp3");
-		DownloadFiles("127.0.0.1","sridharan","student","/home/sridharan/Server/User1/",listoffiles);
+		listoffiles.add("bb.mp3");
+		DownloadFiles("192.168.43.52","tamizh","senthamizhan123","/home/tamizh/Server/User1/",listoffiles);
 	}	
 }
