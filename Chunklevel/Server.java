@@ -362,7 +362,8 @@ public class Server
 				{
 					CuckooHashMap<String,String> list=gson.fromJson(listrec, new TypeToken<CuckooHashMap<String,String>>(){}.getType());	
 					String path=list.get("list");
-					String result=ListFile.ListFiles(path);
+					List<ListingFile> res=ListFile.ListFilesandDirectory(path);
+					String result=gson.toJson(res);
 					rdout.writeUTF(result);  
 					rdout.flush();
 				}

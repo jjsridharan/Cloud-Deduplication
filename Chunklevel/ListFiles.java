@@ -1,7 +1,9 @@
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.net.Socket;
+import java.util.List;
 import java.text.SimpleDateFormat;
 import java.text.DateFormat;
 import org.apache.commons.net.ftp.FTP;
@@ -9,24 +11,31 @@ import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPReply;
 import org.apache.commons.net.ftp.FTPFile;
 
+
 public class ListFiles
 {
-	public static void ListFilesandDirectory(String server,String path)throws Exception
+	public static List<ListingFile> ListFilesandDirectory(String path)throws Exception
 	{
+		String response=Client.GetServerDetails();	
+		String responsearr[]=response.split("###",0);
+		String server=responsearr[0];
+		path=responsearr[3]+path+"/";
 		CuckooHashMap<String,String> list=new CuckooHashMap<String,String>();
 		list.put("list",path);
 		Gson gson=new Gson();		
 		String listsend=gson.toJson(list),result="";		
-		Socket s=new Socket(server,9999);  
+		Socket s=new Socket(server,9999);
+		listsend=Upload.ReedSolomonFunc(listsend);  
 		DataInputStream din=new DataInputStream(s.getInputStream());  
 		DataOutputStream dout=new DataOutputStream(s.getOutputStream());  		  
 		dout.writeUTF(listsend);  
 		dout.flush();
 		result=din.readUTF();
-		System.out.println("Files are\n"+result);
+		List<ListingFile> res=gson.fromJson(result, new TypeToken<List<ListingFile>>(){}.getType());	
+		return res;
 	}
 	public static void main(String[] args)throws Exception
 	{
-		ListFilesandDirectory("127.0.0.1","/home/sridharan/Server/User1/");
+		ListFilesandDirectory("127.0.0.1","/home/sridharan/server/sridharan995/");
 	}
 }

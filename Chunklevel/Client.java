@@ -5,7 +5,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 public class Client
 {
-	public static void RegisterUser(String username,String password,String name,String secretquestion)throws Exception
+	public static String RegisterUser(String username,String password,String mail,String phone)throws Exception
 	{
 		String url = "https://clouddeduplication.000webhostapp.com/register.php";
  		URL obj = new URL(url);
@@ -13,8 +13,7 @@ public class Client
 		con.setRequestMethod("POST");		
 		con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
 		System.out.println(username);
-		secretquestion=secretquestion.toLowerCase();
-		String urlParameters = "username="+username+"&password="+password+"&name="+name+"&secquest="+secretquestion;
+		String urlParameters = "username="+username+"&password="+password+"&mail="+mail+"&phone="+phone;
 		con.setDoOutput(true);
 		DataOutputStream wr = new DataOutputStream(con.getOutputStream());
 		wr.writeBytes(urlParameters);
@@ -39,18 +38,18 @@ public class Client
 		System.out.println(response.toString());
 		if(response.toString().contains("Success"))
 		{
-			System.out.println("Successfully Registered");
+			return "Successfully Registered";
 		}
 		else if(response.toString().contains("User"))
 		{
-			System.out.println("username already exists");
+			return "username already exists. Please try different username";
 		}
 		else
 		{
-			System.out.println("Error in registering");
+			return "Error in registering. Please try after some time";
 		}
 	}
-	public static void Login(String username,String password)throws Exception
+	public static String Login(String username,String password)throws Exception
 	{
 		String url = "https://clouddeduplication.000webhostapp.com/login.php";
  		URL obj = new URL(url);
@@ -83,12 +82,12 @@ public class Client
 		
 		if(!(response.toString().contains("Error")))
 		{
-			System.out.println("Successfully Logged in");
 			System.out.println(response.toString());
+			return response.toString();
 		}
 		else
 		{
-			System.out.println("Error in login");
+			return "Invalid Credentials";
 		}
 	}
 	public static void ChangePassword(String username,String password)throws Exception
@@ -130,6 +129,28 @@ public class Client
 		{
 			System.out.println("Error in Changing Password");
 		}
+	}
+	public static String GetServerDetails()throws Exception
+	{
+		String url = "https://clouddeduplication.000webhostapp.com/getdetails.php";
+ 		URL obj = new URL(url);
+		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+		con.setRequestMethod("POST");		
+		con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");		
+		con.setDoOutput(true);
+		int responseCode = con.getResponseCode();
+		System.out.println("\nSending 'POST' request to URL : " + url);
+		System.out.println("Response Code : " + responseCode);
+		BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+		String inputLine;
+		StringBuffer response = new StringBuffer();
+		while ((inputLine = in.readLine()) != null) 
+		{
+			response.append(inputLine);
+		}
+		in.close();
+		return response.toString();
+		
 	}
 	public static void ForgotPassword(String username,String password,String secquest)throws Exception
 	{
@@ -175,7 +196,7 @@ public class Client
 	}
 	public static void main(String args[])throws Exception
 	{
-		ForgotPassword("Sridharan99","sri","ajiths");
+		System.out.println(GetServerDetails());
 	}
 
 }

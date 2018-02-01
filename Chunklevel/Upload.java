@@ -265,8 +265,36 @@ public class Upload
 		str2=Integer.toString(initlen)+str2;
 		return str2;
 	}
-	public static void UploadFiles(String ip,String user,String pass,String base,List<String> files)throws Exception
+	public static void CheckforDirectory(String server,String user,String pass,String base)throws Exception
+	{
+		FTPClient ftpClient = new FTPClient();
+		ftpClient.connect(server,21);
+		ftpClient.enterLocalPassiveMode();
+		int reply = ftpClient.getReplyCode();
+		if(!FTPReply.isPositiveCompletion(reply)) 
+		{
+			ftpClient.disconnect();
+			System.err.println("FTP server refused connection.");
+			System.exit(1);
+		}
+		if(ftpClient.login(user,pass))
+		{
+			boolean directoryExists = ftpClient.changeWorkingDirectory(base);
+			if(directoryExists)	return ;
+			boolean makeDirectory = ftpClient.makeDirectory(base);
+			System.out.println(base);
+		}
+	}
+	public static void UploadFiles(String base,List<String> files)throws Exception
 	{		
+		String ip,user,pass;
+		String response=Client.GetServerDetails();	
+		String responsearr[]=response.split("###",0);
+		ip=responsearr[1];
+		user=responsearr[1];
+		pass=responsearr[2];
+		base=responsearr[3]+base+"/";
+		CheckforDirectory(ip,user,pass,base);
 		Upload client=new Upload();
 		client.getList(base,files);
 		Gson gson=new Gson();
@@ -298,12 +326,13 @@ public class Upload
 		dout.flush();
 		duped=din.readUTF();
 		dout.close(); 
-		s.close();  
+		s.close(); 	
+		System.out.println("Files Uploaded Successfully");
 	}
 	public static void main(String args[])throws Exception
 	{  
 		List<String> files=addfiles("G:\\Test\\");
-		UploadFiles("192.168.117.88","student","student","/home/student/Server/User1/",files);
+		UploadFiles("/home/student/Server/User1/",files);
 		System.out.println("Number of Bytes Uploaded :"+bytesuploaded);
 	}
 }  
