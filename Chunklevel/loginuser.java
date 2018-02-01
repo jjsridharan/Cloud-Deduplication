@@ -60,7 +60,8 @@ public class loginuser{
 		    		pm.main(arg);
 			}
 			catch(Exception ex)
-			{		
+			{	
+				ex.printStackTrace();
 			}
         	}
         	});

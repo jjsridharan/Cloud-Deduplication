@@ -14,10 +14,13 @@ public class ListFile
         }
 	public static List<ListingFile> ListFilesandDirectory(String path)throws Exception
 	{
+		path=path.replaceAll("\n","");
 		List<ListingFile> result=new ArrayList<ListingFile>();
 		File[] files= new File(path).listFiles();
 		for(File file :files)
 		{
+			try
+			{
 			if(file.isFile())
 			{
 				String filename=stripExtension(file.getAbsolutePath())+"."+RetrieveAttribute.Retrieve(file.getAbsolutePath());
@@ -26,7 +29,12 @@ public class ListFile
 			else
 			{
 				if(!((file.getName()).equals("..") || (file.getName()).equals(".")))
-				result.add(new ListingFile(file.getName(),true));				
+				result.add(new ListingFile(file.getAbsolutePath(),true));				
+			}
+			}
+			catch(Exception ex)
+			{
+				file.delete();
 			}
 		}
 		return result;

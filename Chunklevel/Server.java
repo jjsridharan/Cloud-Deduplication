@@ -203,7 +203,10 @@ public class Server
 	{
 		for(String file : listoffiles)
 		{
-			String path=base+RetrieveFile.stripExtension(file)+".src";
+			file=file.replaceAll("\\s","");
+			base=base.replaceAll("\\s","");
+			String path=base+RetrieveFile.stripExtension(file)+".src";			
+			System.out.println(path+base+file);
 			getFile(path,base+file);		
 		}
 	}

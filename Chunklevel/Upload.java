@@ -290,7 +290,7 @@ public class Upload
 		String ip,user,pass;
 		String response=Client.GetServerDetails();	
 		String responsearr[]=response.split("###",0);
-		ip=responsearr[1];
+		ip=responsearr[0];
 		user=responsearr[1];
 		pass=responsearr[2];
 		base=responsearr[3]+base+"/";

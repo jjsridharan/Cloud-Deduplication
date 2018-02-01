@@ -62,8 +62,16 @@ public class DownloadFiles
 		str2=Integer.toString(initlen)+str2;
 		return str2;
 	}
-	static void DownloadFiles(String server,String user,String pass,String base,List<String> listoffiles)throws Exception
+	static void DownloadFiles(String base,List<String> listoffiles)throws Exception
 	{
+		String server,user,pass;
+		String response=Client.GetServerDetails();	
+		String responsearr[]=response.split("###",0);
+		server=responsearr[0];
+		user=responsearr[1];
+		pass=responsearr[2];
+		base=responsearr[3]+base+"/";
+		Upload.CheckforDirectory(server,user,pass,base);
 		Socket s=new Socket(server,9999);  
 		DataInputStream din=new DataInputStream(s.getInputStream());  
 		DataOutputStream dout=new DataOutputStream(s.getOutputStream());		
@@ -82,6 +90,7 @@ public class DownloadFiles
 			{
 					int port=21;
 					FTPClient ftpClient = new FTPClient();
+					ftpClient.setControlEncoding("UTF-8");
 					ftpClient.connect(server,port);
 					ftpClient.enterLocalPassiveMode();
 					int reply = ftpClient.getReplyCode();
@@ -94,11 +103,14 @@ public class DownloadFiles
 					if(ftpClient.login(user,pass))
 					{
 						ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
-						ftpClient.enterLocalPassiveMode();           				
-		   				String downloadFile = base+filename;
-							System.out.println(downloadFile);
-		    				 OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(filename));
+						ftpClient.enterLocalPassiveMode();  						  
+						filename=filename.replaceAll("\\s","");
+						base=base.replaceAll("\\s","");
+		   				String downloadFile = base+filename;						
+						filename=((System.getProperty("user.home")).replace("\\","/"))+"/Downloads/"+filename;
+						OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(filename,false));
 		    				boolean success = ftpClient.retrieveFile(downloadFile, outputStream);
+						System.out.println("Status:" +success +". "+ downloadFile + " File Transfered sucessfully");
 						File permit=new File(filename);
 						permit.setReadable(true, false);
 						permit.setExecutable(true, false);
@@ -122,6 +134,6 @@ public class DownloadFiles
 		List<String> listoffiles;
 		listoffiles=new ArrayList<String>();
 		listoffiles.add("bb.mp3");
-		DownloadFiles("192.168.117.88","student","student","/home/student/Server/User1/",listoffiles);
+		DownloadFiles("/home/student/Server/User1/",listoffiles);
 	}	
 }

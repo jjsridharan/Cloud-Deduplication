@@ -32,10 +32,11 @@ public class ListFiles
 		dout.flush();
 		result=din.readUTF();
 		List<ListingFile> res=gson.fromJson(result, new TypeToken<List<ListingFile>>(){}.getType());	
+		res.add(new ListingFile(responsearr[3],false));
 		return res;
 	}
 	public static void main(String[] args)throws Exception
 	{
-		ListFilesandDirectory("127.0.0.1","/home/sridharan/server/sridharan995/");
+		ListFilesandDirectory("/home/sridharan/server/sridharan995/");
 	}
 }
