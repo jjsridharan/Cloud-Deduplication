@@ -12,21 +12,104 @@ public class ui2
 {
 
 	static File[] listOfFiles;		
-	static int numfiles,currentmenu;		
+	static int numfiles,numfilesserver,currentmenu;		
 	static int []button;
 	static JButton []button1;
 	static JButton []button2;
+	static JButton []button3;
 	static JButton up= new JButton("Upload");	
 	static JPanel file_name = new JPanel();
 	static JPanel right_side=new JPanel();
+	static JPanel cloud=new JPanel();
 	static JFileChooser chooser;
 	static String choosertitle;
    	static JButton folderchooser;
+	static JButton folderchooser1;
 	static Border emptyBorder = BorderFactory.createEmptyBorder();	
 	static JFrame jf = new JFrame();
 	static String base;
 	static List<ListingFile> listfromserver;
 	static String dirname;
+	static JSplitPane splitPane2;
+	static JSplitPane splitPane;
+	static JSplitPane splitPane3;
+	static JTextField tf=new JTextField();
+	static JButton jb=new JButton("Create Folder");
+
+
+static ActionListener listener2=new ActionListener()
+	{
+		@Override
+		public void actionPerformed(ActionEvent e)
+		{			
+			try
+			{
+				String buttonclicked=((JButton) e.getSource()).getText();	
+				System.out.println("\n\n\n"+buttonclicked+"\n\n\n");			
+				if(buttonclicked.equals(".."))
+				{
+					
+					if(!dirname.equals(base))
+					dirname=dirname.substring(0,dirname.lastIndexOf('/'));		
+					listfromserver=ListFiles.ListFilesandDirectory(dirname);
+					Filllist2();						
+					return ;
+				}	
+			
+			int key=Integer.parseInt(((JButton) e.getSource()).getName());
+						if((listfromserver.get(key)).isdirectory)
+						{
+							listfromserver=ListFiles.ListFilesandDirectory(button3[key].getText());
+							dirname=button3[key].getText();
+							Filllist2();
+							return ;				
+						}
+						
+				
+			}			
+			catch(Exception ex){}
+		}
+
+
+	};
+
+
+	static void Filllist2()
+	{
+		cloud.removeAll();
+		cloud.revalidate();
+		cloud.repaint();
+		numfilesserver=listfromserver.size()-1;
+		button3 = new JButton[numfilesserver];
+		folderchooser1=new JButton();
+		folderchooser1.setText("..");
+		folderchooser1.setPreferredSize(new Dimension(200,30));
+		folderchooser1.addActionListener(listener2);
+		folderchooser1.setHorizontalAlignment(SwingConstants.CENTER);		
+		cloud.add(folderchooser1);
+		for (int j=0; j<numfilesserver; j++)
+		{
+			button3[j]=new JButton();
+			button3[j].setName(new Integer(j).toString());
+			button3[j].setText(((listfromserver.get(j)).name).substring(((listfromserver.get(numfilesserver)).name).length()));
+			button3[j].setPreferredSize(new Dimension(200, 30));						
+			button3[j].addActionListener(listener2);
+			button3[j].setBorder(emptyBorder);
+			cloud.add(button3[j]);
+			button3[j].setOpaque(false);
+			button3[j].setContentAreaFilled(false);
+			button3[j].setBorder(BorderFactory.createCompoundBorder(
+    			BorderFactory.createLineBorder(Color.CYAN, 5), 
+			BorderFactory.createEmptyBorder(5, 5, 10, 10)));
+			button3[j].setBorderPainted(false);
+			button3[j].setHorizontalAlignment(SwingConstants.CENTER);
+		}		
+		System.out.println("Hi");
+		jf.revalidate();
+	}
+
+
+
 	static ActionListener listener = new ActionListener() 
 	{
 	        @Override
@@ -35,8 +118,8 @@ public class ui2
 			if(currentmenu==0)
 			{
 		    		if (e.getSource() instanceof JButton) {
-					String buttonclicked=((JButton) e.getSource()).getText();
-					if(buttonclicked.equals("Choose Folder"))
+					JButton buttonclicked=(JButton) e.getSource();
+					if((buttonclicked.getText()).equals("Choose Folder"))
 					{
 						chooser = new JFileChooser(); 
 	  					chooser.setCurrentDirectory(new java.io.File("."));
@@ -55,7 +138,7 @@ public class ui2
 					}	
 					else
 					{
-						int key=Integer.parseInt(((JButton) e.getSource()).getName());
+						int key=Integer.parseInt(buttonclicked.getName());
 							if(listOfFiles[key].isDirectory())
 							{
 								Filllist(listOfFiles[key].getAbsolutePath());
@@ -80,43 +163,43 @@ public class ui2
 			{
 			     try
 				{
-				String buttonclicked=((JButton) e.getSource()).getText();				
-				if(buttonclicked.equals(".."))
+					String buttonclicked=((JButton) e.getSource()).getText();				
+					if(buttonclicked.equals(".."))
+					{
+						if(!dirname.equals(base))
+						dirname=dirname.substring(0,dirname.lastIndexOf('/'));
+						listfromserver=ListFiles.ListFilesandDirectory(dirname);
+						Filllistfromserver();						
+						return ;
+					}	
+					else
+					{
+							int key=Integer.parseInt(((JButton) e.getSource()).getName());
+							if((listfromserver.get(key)).isdirectory)
+							{
+								listfromserver=ListFiles.ListFilesandDirectory(button1[key].getText());
+								dirname=button1[key].getText();
+								Filllistfromserver();
+								return ;				
+							}
+							if(button[key]==1)
+							{
+								button1[key].setVisible(false);
+								button2[key].setVisible(true);
+								button[key]=0;
+				       			}
+							else if(button[key]==0)
+							{
+								button1[key].setVisible(true);
+								button2[key].setVisible(false);
+								button[key]=1;
+							}						
+					}
+				}
+				catch(Exception ex)
 				{
-					if(!dirname.equals(base))
-					dirname=dirname.substring(0,dirname.lastIndexOf('/'));
-					listfromserver=ListFiles.ListFilesandDirectory(dirname);
-					Filllistfromserver();						
-					return ;
-				}	
-				else
-				{
-						int key=Integer.parseInt(((JButton) e.getSource()).getName());
-						if((listfromserver.get(key)).isdirectory)
-						{
-							listfromserver=ListFiles.ListFilesandDirectory(button1[key].getText());
-							dirname=button1[key].getText();
-							Filllistfromserver();
-							return ;				
-						}
-						if(button[key]==1)
-						{
-							button1[key].setVisible(false);
-							button2[key].setVisible(true);
-							button[key]=0;
-			       		}
-						else if(button[key]==0)
-						{
-							button1[key].setVisible(true);
-							button2[key].setVisible(false);
-							button[key]=1;
-						}
-						
-			}
-			}
-			catch(Exception ex){
-								ex.printStackTrace();
-						}
+					ex.printStackTrace();
+				}
 			}
         	}
     	};
@@ -263,6 +346,31 @@ public class ui2
 		//chooser.setDialogTitle(choosertitle);
 		chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 		chooser.setAcceptAllFileFilterUsed(false);
+		tf.setPreferredSize(new Dimension(150, 25));
+		jb.setPreferredSize(new Dimension(150, 25));
+		JPanel add_folder=new JPanel();
+		add_folder.add(tf);
+		add_folder.add(jb);
+		JScrollPane scrollPane = new JScrollPane(file_name);
+		JScrollPane scrollPane2 = new JScrollPane(right_side);
+		//scrollPane.setPreferredSize(new Dimension(600, 600));	
+		JScrollPane scrollPane3 = new JScrollPane(cloud);			
+                splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+                           scrollPane,scrollPane2);
+		splitPane3=new JSplitPane(JSplitPane.VERTICAL_SPLIT,
+                           scrollPane3,add_folder);
+		splitPane3.setDividerLocation(300);
+                splitPane2=new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+                           splitPane,splitPane3);
+                splitPane.setOneTouchExpandable(true);
+		splitPane.setDividerLocation(300);
+                splitPane2.setOneTouchExpandable(true);
+		splitPane2.setDividerLocation(500);
+		jf.add(splitPane2);
+		upload.add(up);	
+
+
+
 		class MenuActionListener implements ActionListener 
 		{
 			public void actionPerformed(ActionEvent e) 
@@ -272,27 +380,48 @@ public class ui2
 				System.out.println("Selected: " + e.getActionCommand());
 				if(e.getActionCommand().equals("Upload"))
 				{
+					jf.getContentPane().remove(splitPane2);
+					jf.add(splitPane);
+					jf.getContentPane().invalidate();
+					jf.getContentPane().validate();
+					jf.getContentPane().remove(splitPane);
+					splitPane2=new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+                           splitPane,splitPane3);
+					splitPane2.setOneTouchExpandable(true);
+		splitPane2.setDividerLocation(500);
+
+					jf.add(splitPane2);
+					jf.getContentPane().invalidate();
+					jf.getContentPane().validate();
 					currentmenu=0;
 					up.setText("Upload");
 					l1.setText("Files in System");
 					Filllist(choosertitle);
+					listfromserver=ListFiles.ListFilesandDirectory(base);
+					Filllist2();
 				}
 				else if(e.getActionCommand().equals("Download"))
 				{
+					jf.getContentPane().remove(splitPane2);
+					jf.add(splitPane);
+					jf.getContentPane().invalidate();
+					jf.getContentPane().validate();
 					currentmenu=1;
 					listfromserver=ListFiles.ListFilesandDirectory(base);
 					up.setText("Download");
 					Filllistfromserver();
-					dirname=base;
 					l1.setText("Files in Cloud");
 				}
 				else 
 				{
+					jf.getContentPane().remove(splitPane2);
+					jf.add(splitPane);
+					jf.getContentPane().invalidate();
+					jf.getContentPane().validate();
 					currentmenu=2;
 					listfromserver=ListFiles.ListFilesandDirectory(base);
 					up.setText("Delete");
 					Filllistfromserver();
-					dirname=base;
 					l1.setText("Files in Cloud");
 				}	
 				}
@@ -302,6 +431,7 @@ public class ui2
 				}
 	  		}
 		}
+
 				
 		currentmenu=0;
 		JMenuBar jmb = new JMenuBar();
@@ -324,8 +454,15 @@ public class ui2
 		right_side.add(l2);
 		file_name.setLayout(new BoxLayout(file_name, BoxLayout.Y_AXIS));
 		right_side.setLayout(new BoxLayout(right_side, BoxLayout.Y_AXIS));
-		choosertitle="G:/";
+		cloud.setLayout(new BoxLayout(cloud, BoxLayout.Y_AXIS));
+		choosertitle=new java.io.File(".").toString();
 		Filllist(choosertitle);
+	      try{
+              dirname=base;
+               listfromserver=ListFiles.ListFilesandDirectory(dirname);
+               }
+               catch(Exception ex2){ ex2.printStackTrace();}   
+               Filllist2();
 		for (int i = 0; i < numfiles; i++) 
 		{
       			if (listOfFiles[i].isFile()) 
@@ -333,19 +470,7 @@ public class ui2
     			else if (listOfFiles[i].isDirectory()) 
         			System.out.println("Directory " + listOfFiles[i].getName());
     		}
-		
-		
-
-		JScrollPane scrollPane = new JScrollPane(file_name);
-		JScrollPane scrollPane2 = new JScrollPane(right_side);
-		//scrollPane.setPreferredSize(new Dimension(600, 600));				
-                JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
-                           scrollPane,scrollPane2);
-                splitPane.setOneTouchExpandable(true);
-		splitPane.setDividerLocation(300);
-		
-		
-		upload.add(up);		
+		upload.add(up);
 		
 		up.addActionListener( new ActionListener()
 		{
@@ -355,7 +480,6 @@ public class ui2
 			try
 			{
 				List<String> choosedfiles=new ArrayList<String>();
-
 				if(currentmenu==0)
 				{
 					for(int i=0;i<numfiles;i++)
@@ -365,8 +489,11 @@ public class ui2
 							choosedfiles.add(listOfFiles[i].toString());
 						}
 					}
-					Upload.UploadFiles(base,choosedfiles);
+					System.out.println(choosedfiles.size()+"adflasdfldsaf");
+					Upload.UploadFiles(dirname,choosedfiles);
 					Filllist(choosertitle);
+              				listfromserver=ListFiles.ListFilesandDirectory(dirname);
+					Filllist2();					
 				}
 				else if(currentmenu==1)
 				{
@@ -375,8 +502,7 @@ public class ui2
 						if(button[i]==0)
 						{				
 							String fname=button1[i].getText();
-							choosedfiles.add(fname.substring(fname.lastIndexOf('/')+1));
-						}
+							choosedfiles.add(fname.substring(fname.lastIndexOf('/')+1));						}
 					}
 					System.out.println("india"+dirname);
 					DownloadFiles.DownloadFiles(dirname,choosedfiles);
@@ -404,8 +530,24 @@ public class ui2
 			}
         	}
         	});
+		jb.addActionListener( new ActionListener()
+		{
+    		@Override
+    		public void actionPerformed(ActionEvent e)
+    		{
+			try
+			{
+				CreateFolder.CreateFolder(dirname+"/"+tf.getText());
+				listfromserver=ListFiles.ListFilesandDirectory(dirname);
+				Filllist2();
+			}
+			catch(Exception ex)
+			{
+				ex.printStackTrace();
+			}
+        	}
+        	});
 		jf.setJMenuBar(jmb);
-		jf.add(splitPane,BorderLayout.CENTER);
 		jf.add(upload,BorderLayout.PAGE_END);
 		jf.setSize(800,500);
 		jf.setVisible(true);

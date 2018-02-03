@@ -395,8 +395,12 @@ public class Server
 	{  		
 		new Server();
 		ServerSocket ss=new ServerSocket(9999); 		
-		int ts=2;
+		int ts=1000;
 		Thread t=null;
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+    public void run() { try {compress(gson.toJson(map));}catch(Exception ex){}
+       }
+ });
 		while(ts!=0)
 		{
 			socket=ss.accept();
