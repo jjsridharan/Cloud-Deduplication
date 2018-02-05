@@ -104,8 +104,8 @@ public class DownloadFiles
 					{
 						ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
 						ftpClient.enterLocalPassiveMode();  						  
-						filename=filename.replaceAll("\\s","");
-						base=base.replaceAll("\\s","");
+						filename=filename.replaceAll("\n","");
+						base=base.replaceAll("\n","");
 		   				String downloadFile = base+filename;						
 						filename=((System.getProperty("user.home")).replace("\\","/"))+"/Downloads/"+filename;
 						OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(filename,false));

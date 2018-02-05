@@ -18,7 +18,7 @@ public class signup
 }
 	public static boolean validname(String uname)
 	{
-		Pattern pattern = Pattern.compile("^[a-zA-Zа-яА-Я0-9_!]+$");
+		Pattern pattern = Pattern.compile("^[a-zA-Z0-9_!]+$");
     		Matcher matcher = pattern.matcher(uname);
 		return matcher.matches();
 	}
