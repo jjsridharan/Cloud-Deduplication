@@ -4,6 +4,7 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.border.*;
 public class loginuser{
+
 	public static void main(String args[]){
 		final JSeparator sep=new JSeparator();
 		final JFrame jf=new JFrame();
@@ -50,7 +51,7 @@ public class loginuser{
 					arg[0]="Successfully Logged in!";
 					arg[1]=response;
 					jf.dispose();
-					ui2 ui=new ui2();
+					MainUI ui=new MainUI();
 					ui.main(arg);	
 				}
 				else

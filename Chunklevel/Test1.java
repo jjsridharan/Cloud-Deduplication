@@ -1,14 +1,11 @@
-import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.attribute.UserDefinedFileAttributeView;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Test1 {
 
   public static void main(String[] args) throws Exception {
-    System.out.println(RetrieveAttribute.Retrieve("G:\\Cloud-Deduplication\\Chunklevel\\Test\\hel.src"));
+		System.out.println("Input String matches regex - "+signup.validname("newadsf/"));
+
   }
 
 }

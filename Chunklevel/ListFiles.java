@@ -19,7 +19,10 @@ public class ListFiles
 		String response=Client.GetServerDetails();	
 		String responsearr[]=response.split("###",0);
 		String server=responsearr[0];
+		String user=responsearr[1];
+		String pass=responsearr[2];
 		path=responsearr[3]+path+"/";
+		Upload.CheckforDirectory(server,user,pass,path);
 		CuckooHashMap<String,String> list=new CuckooHashMap<String,String>();
 		list.put("list",path);
 		Gson gson=new Gson();		

@@ -8,7 +8,7 @@ import java.util.List;
 import java.awt.event.*;
 import javax.swing.border.*;
 
-public class ui2
+public class MainUI
 {
 
 	static File[] listOfFiles;		
@@ -537,7 +537,17 @@ static ActionListener listener2=new ActionListener()
     		{
 			try
 			{
+				prompt pm=new prompt();
+				String arg[]=new String[1];
+				if(!signup.validname(tf.getText()))
+				{					
+					arg[0]="Invalid foldername. Folder name should only contain alphabets and numbers";
+					pm.main(arg);
+					return ;
+				}
 				CreateFolder.CreateFolder(dirname+"/"+tf.getText());
+				arg[0]="Successfully folder Created";
+				pm.main(arg);
 				listfromserver=ListFiles.ListFilesandDirectory(dirname);
 				Filllist2();
 			}

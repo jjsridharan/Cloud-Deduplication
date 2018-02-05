@@ -20,7 +20,7 @@ public class prompt{
         	p1.add(jl);
         	p1.add(ok);
         	jf.add(p1);
-        	jf.setSize(400,100);
+        	jf.setSize(500,100);
         	jf.setVisible(true);
         	jf.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		jf.setLocationRelativeTo(null);
