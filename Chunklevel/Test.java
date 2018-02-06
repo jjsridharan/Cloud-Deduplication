@@ -9,7 +9,6 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 public class Test extends JFrame {
   JPopupMenu menu = new JPopupMenu("Popup");
-
   class MyLabel extends JButton {
     public MyLabel(String text) {
       super(text);

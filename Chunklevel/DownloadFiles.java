@@ -18,7 +18,6 @@ import javax.xml.bind.DatatypeConverter;
 
 public class DownloadFiles
 {
-	static List<ListingFile> listfromserver;
 	public static String ReedSolomonFunc(String listsend)
 	{
 		
@@ -82,11 +81,16 @@ public class DownloadFiles
 			ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
 			return ftpClient;
 		}
+		else
+		{
+			System.out.println("Login failed");
+		} 				
+		
 		return null;
 	}
 	static void DownloadFilesRecursively(String folder,String dest)throws Exception
 	{
-		listfromserver=ListFiles.ListFilesandDirectory(folder);
+		List<ListingFile> listfromserver=ListFiles.ListFilesandDirectory(folder);
 		List<String> listoffiles=new ArrayList<String>();
 		int numfiles=listfromserver.size()-1;
 		File destname=new File(dest);
@@ -116,7 +120,6 @@ public class DownloadFiles
 		user=responsearr[1];
 		pass=responsearr[2];
 		base=responsearr[3]+folder+"/";
-		FTPClient ftpClient=login(server,user,pass);
 		DownloadFilesRecursively(folder,((System.getProperty("user.home")).replace("\\","/"))+"/Downloads/"+fname+"/");
 	}
 	static void DownloadFiles(String base,List<String> listoffiles,String dstlocation)throws Exception
@@ -127,7 +130,10 @@ public class DownloadFiles
 		server=responsearr[0];
 		user=responsearr[1];
 		pass=responsearr[2];
+		if(!base.equals(""))
 		base=responsearr[3]+base+"/";
+		else
+		base=responsearr[3];
 		Upload.CheckforDirectory(server,user,pass,base);
 		Socket s=new Socket(server,9999);  
 		DataInputStream din=new DataInputStream(s.getInputStream());  

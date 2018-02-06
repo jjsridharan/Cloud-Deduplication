@@ -71,6 +71,8 @@ public class MainUI
 		{
 			String folder=((JButton) menu.getInvoker()).getText();
 			DeleteFiles.DeleteDirectory(folder,folder.substring(folder.lastIndexOf('/')));
+			listfromserver=ListFiles.ListFilesandDirectory(dirname);
+			Filllistfromserver();
 		}
 		catch(Exception ex)
 		{
