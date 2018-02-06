@@ -11,6 +11,10 @@ public class DeleteFiles
 		if (pos == -1) return str;
 		return str.substring(0, pos);
 	}
+	public static void DeleteDirectory(String folder,String fname)throws Exception
+	{
+		
+	}
     public static void DeleteFileList(List<String> files)throws Exception
 	{
 		String server,user,pass;

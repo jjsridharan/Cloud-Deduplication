@@ -11,12 +11,14 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.net.ftp.FTP;
+import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPReply;
 import javax.xml.bind.DatatypeConverter;
 
 public class DownloadFiles
 {
+	static List<ListingFile> listfromserver;
 	public static String ReedSolomonFunc(String listsend)
 	{
 		
@@ -31,7 +33,7 @@ public class DownloadFiles
 		shardSize = (storedSize + DATA_SHARDS - 1) / DATA_SHARDS;
   		final int bufferSize = shardSize * DATA_SHARDS;
         	final byte [] allBytes = new byte[bufferSize];
-        	System.out.println(allBytes.length);
+        	//System.out.println(allBytes.length);
 		final byte [] temp = listsend.getBytes();
 		ByteBuffer.wrap(allBytes).putInt(fileSize);
 		
@@ -55,14 +57,69 @@ public class DownloadFiles
 		str2=str2+"###"+shardNumber+"###"+DatatypeConverter.printBase64Binary(shards[i]);
 		if(initlen==0)
 			initlen=str2.length()-6;
-		System.out.println("\n Shard Length : "+shards[i].length+" String Length : "+initlen);
+		//System.out.println("\n Shard Length : "+shards[i].length+" String Length : "+initlen);
 	    shardNumber++;
 		}
 	
 		str2=Integer.toString(initlen)+str2;
 		return str2;
 	}
-	static void DownloadFiles(String base,List<String> listoffiles)throws Exception
+	static FTPClient login(String server,String user,String pass)throws Exception
+	{		
+		FTPClient ftpClient = new FTPClient();
+		ftpClient.setControlEncoding("UTF-8");
+		ftpClient.connect(server,21);
+		ftpClient.enterLocalPassiveMode();
+		int reply = ftpClient.getReplyCode();
+		if(!FTPReply.isPositiveCompletion(reply)) 
+		{
+			ftpClient.disconnect();
+			System.err.println("FTP server refused connection.");
+			System.exit(1);
+		}
+		if(ftpClient.login(user,pass))
+		{
+			ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
+			return ftpClient;
+		}
+		return null;
+	}
+	static void DownloadFilesRecursively(String folder,String dest)throws Exception
+	{
+		listfromserver=ListFiles.ListFilesandDirectory(folder);
+		List<String> listoffiles=new ArrayList<String>();
+		int numfiles=listfromserver.size()-1;
+		File destname=new File(dest);
+		destname.mkdirs();
+		for(int j=0;j<numfiles;j++)
+		{
+			if((listfromserver.get(j)).isdirectory)
+			{
+				String subdir=folder+((listfromserver.get(j)).name).substring(((listfromserver.get(j)).name).lastIndexOf("/"));
+				System.out.println(subdir);
+				DownloadFilesRecursively(subdir,dest+subdir.substring(subdir.lastIndexOf('/')+1)+"/");
+			}
+			else
+			{
+				listoffiles.add(((listfromserver.get(j)).name).substring(((listfromserver.get(numfiles)).name).length()));
+			}
+		}
+		System.out.println(dest+"hello");
+		DownloadFiles("",listoffiles,dest);
+	}
+	static void DownloadDirectory(String folder,String fname)throws Exception
+	{
+		String server,user,pass,base;
+		String response=Client.GetServerDetails();	
+		String responsearr[]=response.split("###",0);
+		server=responsearr[0];
+		user=responsearr[1];
+		pass=responsearr[2];
+		base=responsearr[3]+folder+"/";
+		FTPClient ftpClient=login(server,user,pass);
+		DownloadFilesRecursively(folder,((System.getProperty("user.home")).replace("\\","/"))+"/Downloads/"+fname+"/");
+	}
+	static void DownloadFiles(String base,List<String> listoffiles,String dstlocation)throws Exception
 	{
 		String server,user,pass;
 		String response=Client.GetServerDetails();	
@@ -88,40 +145,22 @@ public class DownloadFiles
 		{
 			for(String filename : listoffiles)
 			{
-					int port=21;
-					FTPClient ftpClient = new FTPClient();
-					ftpClient.setControlEncoding("UTF-8");
-					ftpClient.connect(server,port);
-					ftpClient.enterLocalPassiveMode();
-					int reply = ftpClient.getReplyCode();
-					if(!FTPReply.isPositiveCompletion(reply)) 
-					{
-						ftpClient.disconnect();
-						System.err.println("FTP server refused connection.");
-						System.exit(1);
-					}
-					if(ftpClient.login(user,pass))
-					{
-						ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
-						ftpClient.enterLocalPassiveMode();  						  
-						filename=filename.replaceAll("\n","");
-						base=base.replaceAll("\n","");
-		   				String downloadFile = base+filename;						
-						filename=((System.getProperty("user.home")).replace("\\","/"))+"/Downloads/"+filename;
-						OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(filename,false));
-		    				boolean success = ftpClient.retrieveFile(downloadFile, outputStream);
-						System.out.println("Status:" +success +". "+ downloadFile + " File Transfered sucessfully");
-						File permit=new File(filename);
-						permit.setReadable(true, false);
-						permit.setExecutable(true, false);
-						permit.setWritable(true, false);
-		    				outputStream.close();
-					}
-					else
-					{
-						System.out.println("Login failed");
-					} 
-					ftpClient.logout();
+				FTPClient ftpClient=login(server,user,pass);
+				filename=filename.replaceAll("\n","");
+				base=base.replaceAll("\n","");				
+		   		String downloadFile = base+filename;						
+				if(filename.lastIndexOf("/")!=-1)
+					filename=filename.substring(filename.lastIndexOf("/")+1);
+				filename=dstlocation+filename;
+				OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(filename,false));
+		    		boolean success = ftpClient.retrieveFile(downloadFile, outputStream);
+				System.out.println("Status:" +success +". "+ downloadFile + " File Transfered sucessfully\n"+filename);
+				File permit=new File(filename);
+				permit.setReadable(true, false);
+				permit.setExecutable(true, false);
+				permit.setWritable(true, false);
+		    		outputStream.close();
+				ftpClient.logout();
 			}
 		}
 		else
@@ -134,6 +173,6 @@ public class DownloadFiles
 		List<String> listoffiles;
 		listoffiles=new ArrayList<String>();
 		listoffiles.add("bb.mp3");
-		DownloadFiles("/home/student/Server/User1/",listoffiles);
+		//DownloadFiles("/home/student/Server/User1/",listoffiles);
 	}	
 }

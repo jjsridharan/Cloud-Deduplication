@@ -10,7 +10,8 @@ import javax.swing.border.*;
 
 public class MainUI
 {
-
+	static JPopupMenu menu;
+	static JMenuItem item;
 	static File[] listOfFiles;		
 	static int numfiles,numfilesserver,currentmenu;		
 	static int []button;
@@ -36,7 +37,72 @@ public class MainUI
 	static JTextField tf=new JTextField();
 	static JButton jb=new JButton("Create Folder");
 
+     static class RTButton extends JButton
+	{
+	public RTButton(boolean isdirectory) 
+	{
+		super();
+		if(isdirectory)
+		{
+		menu = new JPopupMenu("Popup");
+		addMouseListener(new PopupTriggerListener());
+		item = new JMenuItem("Dowload");
+		item.addActionListener(new ActionListener() {
+		public void actionPerformed(ActionEvent e) 
+		{
+			try
+			{
+				String folder=((JButton) menu.getInvoker()).getText();
+				DownloadFiles.DownloadDirectory(folder,folder.substring(folder.lastIndexOf('/')+1));
+			}
+			catch(Exception ex)
+			{
+				ex.printStackTrace();
+			}
+		}
+    });
+    menu.add(item);
 
+    item = new JMenuItem("Delete");
+    item.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent e) 
+	{
+		try
+		{
+			String folder=((JButton) menu.getInvoker()).getText();
+			DeleteFiles.DeleteDirectory(folder,folder.substring(folder.lastIndexOf('/')));
+		}
+		catch(Exception ex)
+		{
+			ex.printStackTrace();
+		}
+	}
+    });
+    menu.add(item);
+	}
+    }
+    class PopupTriggerListener extends MouseAdapter 
+    {
+      public void mousePressed(MouseEvent ev) 
+	 {
+        if (ev.isPopupTrigger()) 
+	   {
+          menu.show(ev.getComponent(), ev.getX(), ev.getY());
+        }
+      }
+      public void mouseReleased(MouseEvent ev) 
+	 {
+        if (ev.isPopupTrigger()) 
+	   {
+          menu.show(ev.getComponent(), ev.getX(), ev.getY());
+        }
+      }
+
+      public void mouseClicked(MouseEvent ev) 
+	 {		 
+      }
+    }
+  }
 static ActionListener listener2=new ActionListener()
 	{
 		@Override
@@ -89,7 +155,7 @@ static ActionListener listener2=new ActionListener()
 		cloud.add(folderchooser1);
 		for (int j=0; j<numfilesserver; j++)
 		{
-			button3[j]=new JButton();
+			button3[j]=new RTButton((listfromserver.get(j)).isdirectory);
 			button3[j].setName(new Integer(j).toString());
 			button3[j].setText(((listfromserver.get(j)).name).substring(((listfromserver.get(numfilesserver)).name).length()));
 			button3[j].setPreferredSize(new Dimension(200, 30));						
@@ -254,7 +320,7 @@ static ActionListener listener2=new ActionListener()
 		{
 			button1[j]=new JButton();
 			button1[j].setName(new Integer(j).toString());
-			button1[j].setText(button2[j].getText()+"\n");
+			button1[j].setText(button2[j].getText());
 			button1[j].setPreferredSize(new Dimension(200, 30));						
 			button1[j].addActionListener(listener);
 			button1[j].setBorder(emptyBorder);
@@ -311,7 +377,7 @@ static ActionListener listener2=new ActionListener()
 		{
 			button1[j]=new JButton();
 			button1[j].setName(new Integer(j).toString());
-			button1[j].setText(button2[j].getText()+"\n");
+			button1[j].setText(button2[j].getText());
 			button1[j].setPreferredSize(new Dimension(200, 30));						
 			button1[j].addActionListener(listener);
 			button1[j].setBorder(emptyBorder);
@@ -462,7 +528,7 @@ static ActionListener listener2=new ActionListener()
                listfromserver=ListFiles.ListFilesandDirectory(dirname);
                }
                catch(Exception ex2){ ex2.printStackTrace();}   
-               Filllist2();
+              Filllist2();
 		for (int i = 0; i < numfiles; i++) 
 		{
       			if (listOfFiles[i].isFile()) 
@@ -492,7 +558,7 @@ static ActionListener listener2=new ActionListener()
 					System.out.println(choosedfiles.size()+"adflasdfldsaf");
 					Upload.UploadFiles(dirname,choosedfiles);
 					Filllist(choosertitle);
-              				listfromserver=ListFiles.ListFilesandDirectory(dirname);
+              			listfromserver=ListFiles.ListFilesandDirectory(dirname);
 					Filllist2();					
 				}
 				else if(currentmenu==1)
@@ -505,7 +571,7 @@ static ActionListener listener2=new ActionListener()
 							choosedfiles.add(fname.substring(fname.lastIndexOf('/')+1));						}
 					}
 					System.out.println("india"+dirname);
-					DownloadFiles.DownloadFiles(dirname,choosedfiles);
+					DownloadFiles.DownloadFiles(dirname,choosedfiles,((System.getProperty("user.home")).replace("\\","/"))+"/Downloads/");
 					listfromserver=ListFiles.ListFilesandDirectory(dirname);
 					Filllistfromserver();
 				}
