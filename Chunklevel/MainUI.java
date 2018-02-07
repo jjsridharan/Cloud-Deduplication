@@ -445,8 +445,25 @@ static ActionListener listener2=new ActionListener()
 			{
 				try
 				{
-				System.out.println("Selected: " + e.getActionCommand());
-				if(e.getActionCommand().equals("Upload"))
+			     if(e.getActionCommand().equals("Logout"))
+				{
+					login log=new login();
+					String args[]=new String[1];
+					log.main(args);
+					jf.dispose();
+					prompt pm=new prompt();
+					args[0]="Successfully Logged out";
+					pm.main(args);
+				}
+				else if(e.getActionCommand().equals("Exit"))
+				{
+					jf.dispose();
+					prompt pm=new prompt();
+					String args[]=new String[1];
+					args[0]="Successfully Logged out";
+					pm.main(args);
+				}
+				else if(e.getActionCommand().equals("Upload"))
 				{
 					jf.getContentPane().remove(splitPane2);
 					jf.add(splitPane);
@@ -511,12 +528,20 @@ static ActionListener listener2=new ActionListener()
 		JMenuItem uploadmenu = new JMenuItem("Upload",KeyEvent.VK_T);
 		JMenuItem download = new JMenuItem("Download",KeyEvent.VK_T);		
 		JMenuItem delete = new JMenuItem("Delete",KeyEvent.VK_T);
+		JMenuItem logout = new JMenuItem("Logout",KeyEvent.VK_T);		
+		JMenuItem exit = new JMenuItem("Exit",KeyEvent.VK_T);
+		
 		uploadmenu.addActionListener(new MenuActionListener());
 		download.addActionListener(new MenuActionListener());
-		delete.addActionListener(new MenuActionListener());		
+		delete.addActionListener(new MenuActionListener());
+		logout.addActionListener(new MenuActionListener());
+		exit.addActionListener(new MenuActionListener());	
+				
 		menu.add(uploadmenu);
 		menu.add(download);				
-		menu.add(delete);		
+		menu.add(delete);
+		menu.add(logout);
+		menu.add(exit);
 		jmb.add(menu);			
 		file_name.add(l1);
 		right_side.add(l2);

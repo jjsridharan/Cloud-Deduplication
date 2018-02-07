@@ -187,6 +187,7 @@ public class Upload
 						file=new File(file.getParent()+"/"+stripExtension(file.getName())+".src");
 						System.out.println(file.getParent()+"/"+stripExtension(file.getName())+".src");
 						bytesuploaded+=file.length();
+						in.close();
 						file.delete();
 					}
 					InputStream in = new FileInputStream("sepdedupe.txt");
