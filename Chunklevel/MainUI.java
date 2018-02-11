@@ -10,7 +10,10 @@ import javax.swing.border.*;
 
 public class MainUI
 {
-	static JPopupMenu menu;
+	static JPopupMenu menu,upmenu;
+	static JLabel l1=new JLabel("Files in System");
+	static JLabel l2=new JLabel("Files in Cloud");
+	static JLabel l3=new JLabel("Files selected");
 	static JMenuItem item;
 	static File[] listOfFiles;		
 	static int numfiles,numfilesserver,currentmenu;		
@@ -39,48 +42,78 @@ public class MainUI
 
      static class RTButton extends JButton
 	{
-	public RTButton(boolean isdirectory) 
+	boolean upload;
+	public RTButton(boolean isdirectory,boolean upload) 
 	{
 		super();
+		this.upload=upload;
 		if(isdirectory)
 		{
-		menu = new JPopupMenu("Popup");
-		addMouseListener(new PopupTriggerListener());
-		item = new JMenuItem("Dowload");
-		item.addActionListener(new ActionListener() {
-		public void actionPerformed(ActionEvent e) 
+		if(!upload)
 		{
-			try
+			menu = new JPopupMenu("Popup");
+			addMouseListener(new PopupTriggerListener());
+			item = new JMenuItem("Dowload");
+			item.addActionListener(new ActionListener() 
 			{
-				String folder=((JButton) menu.getInvoker()).getText();
-				DownloadFiles.DownloadDirectory(folder,folder.substring(folder.lastIndexOf('/')+1));
-			}
-			catch(Exception ex)
-			{
-				ex.printStackTrace();
-			}
-		}
-    });
-    menu.add(item);
+				public void actionPerformed(ActionEvent e) 
+				{
+					try
+					{
+						String folder=((JButton) menu.getInvoker()).getText();
+						DownloadFiles.DownloadDirectory(folder,folder.substring(folder.lastIndexOf('/')+1));
+					}
+					catch(Exception ex)
+					{
+						ex.printStackTrace();
+					}
+				}
+	   		});
+	    		menu.add(item);
 
-    item = new JMenuItem("Delete");
-    item.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) 
-	{
-		try
-		{
-			String folder=((JButton) menu.getInvoker()).getText();
-			DeleteFiles.DeleteDirectory(folder,folder.substring(folder.lastIndexOf('/')));
-			listfromserver=ListFiles.ListFilesandDirectory(dirname);
-			Filllistfromserver();
+			item = new JMenuItem("Delete");
+			item.addActionListener(new ActionListener() 
+			{
+				public void actionPerformed(ActionEvent e) 
+				{
+					try
+					{
+						String folder=((JButton) menu.getInvoker()).getText();
+						DeleteFiles.DeleteDirectory(folder,folder.substring(folder.lastIndexOf('/')));
+						listfromserver=ListFiles.ListFilesandDirectory(dirname);
+						Filllist2();
+					}
+					catch(Exception ex)
+					{
+						ex.printStackTrace();
+					}
+				}
+			});
+	    		menu.add(item);
 		}
-		catch(Exception ex)
+		else
 		{
-			ex.printStackTrace();
-		}
-	}
-    });
-    menu.add(item);
+			upmenu = new JPopupMenu("Popup");
+			addMouseListener(new PopupTriggerListener());
+			item = new JMenuItem("Upload");
+			item.addActionListener(new ActionListener() 
+			{
+				public void actionPerformed(ActionEvent e) 
+				{
+					try
+					{
+						Integer folder=Integer.parseInt(((JButton) upmenu.getInvoker()).getName());
+						Upload.UploadDirectory(dirname,listOfFiles[folder].getAbsolutePath());
+						System.out.println(listOfFiles[folder].getAbsolutePath());
+					}
+					catch(Exception ex)
+					{
+						ex.printStackTrace();
+					}
+				}
+	   		});
+	    		upmenu.add(item);
+		}		
 	}
     }
     class PopupTriggerListener extends MouseAdapter 
@@ -89,7 +122,11 @@ public class MainUI
 	 {
         if (ev.isPopupTrigger()) 
 	   {
+	   RTButton buttonclicked=(RTButton)ev.getComponent();
+	   if(buttonclicked.upload==false)
           menu.show(ev.getComponent(), ev.getX(), ev.getY());
+          else
+          upmenu.show(ev.getComponent(), ev.getX(), ev.getY());
         }
       }
       public void mouseReleased(MouseEvent ev) 
@@ -153,11 +190,12 @@ static ActionListener listener2=new ActionListener()
 		folderchooser1.setText("..");
 		folderchooser1.setPreferredSize(new Dimension(200,30));
 		folderchooser1.addActionListener(listener2);
-		folderchooser1.setHorizontalAlignment(SwingConstants.CENTER);		
-		cloud.add(folderchooser1);
+		folderchooser1.setHorizontalAlignment(SwingConstants.CENTER);
+		cloud.add(l2);		
+		cloud.add(folderchooser1);		
 		for (int j=0; j<numfilesserver; j++)
 		{
-			button3[j]=new RTButton((listfromserver.get(j)).isdirectory);
+			button3[j]=new RTButton((listfromserver.get(j)).isdirectory,false);
 			button3[j].setName(new Integer(j).toString());
 			button3[j].setText(((listfromserver.get(j)).name).substring(((listfromserver.get(numfilesserver)).name).length()));
 			button3[j].setPreferredSize(new Dimension(200, 30));						
@@ -190,7 +228,7 @@ static ActionListener listener2=new ActionListener()
 					if((buttonclicked.getText()).equals("Choose Folder"))
 					{
 						chooser = new JFileChooser(); 
-	  					chooser.setCurrentDirectory(new java.io.File("."));
+	  					chooser.setCurrentDirectory(new File(choosertitle));
 						chooser.setDialogTitle(choosertitle);
 						chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 						chooser.setAcceptAllFileFilterUsed(false);
@@ -289,6 +327,7 @@ static ActionListener listener2=new ActionListener()
 		right_side.removeAll();
 		right_side.revalidate();
 		right_side.repaint();
+		right_side.add(l3);
 		numfiles=listOfFiles.length;
 		button=new int[numfiles];
 		button1 = new JButton[numfiles];
@@ -316,11 +355,12 @@ static ActionListener listener2=new ActionListener()
 		folderchooser.setText("Choose Folder");
 		folderchooser.setPreferredSize(new Dimension(200,30));
 		folderchooser.addActionListener(listener);
-		folderchooser.setHorizontalAlignment(SwingConstants.CENTER);		
-		file_name.add(folderchooser);
+		folderchooser.setHorizontalAlignment(SwingConstants.CENTER);	
+		file_name.add(l1);	
+		file_name.add(folderchooser);		
 		for (int j=0; j<numfiles; j++)
 		{
-			button1[j]=new JButton();
+			button1[j]=new RTButton(listOfFiles[j].isDirectory(),true);
 			button1[j].setName(new Integer(j).toString());
 			button1[j].setText(button2[j].getText());
 			button1[j].setPreferredSize(new Dimension(200, 30));						
@@ -346,6 +386,7 @@ static ActionListener listener2=new ActionListener()
 		right_side.removeAll();
 		right_side.revalidate();
 		right_side.repaint();
+		right_side.add(l3);
 		numfiles=listfromserver.size()-1;
 		button=new int[numfiles];
 		button1 = new JButton[numfiles];
@@ -374,7 +415,8 @@ static ActionListener listener2=new ActionListener()
 		folderchooser.setPreferredSize(new Dimension(200,30));
 		folderchooser.addActionListener(listener);
 		folderchooser.setHorizontalAlignment(SwingConstants.CENTER);		
-		file_name.add(folderchooser);
+		file_name.add(l2);
+		file_name.add(folderchooser);		
 		for (int j=0; j<numfiles; j++)
 		{
 			button1[j]=new JButton();
@@ -399,14 +441,16 @@ static ActionListener listener2=new ActionListener()
 	public static void main(String args[])
 	{	
 		base=args[1];
-		JPanel tex=new JPanel();		
-		Border border = BorderFactory.createLineBorder(Color.BLUE, 1);
-		final JLabel l1=new JLabel("Files in System");
-		final JLabel l2=new JLabel("Files selected");
-		l1.setBorder(border);
-		l2.setBorder(border);		
-		tex.add(l1);
-		tex.setLayout(null);
+		
+		l1.setBorder(BorderFactory.createCompoundBorder(
+    			BorderFactory.createLineBorder(Color.BLACK, 5), 
+			BorderFactory.createEmptyBorder(5, 5, 10, 10)));
+		l2.setBorder(BorderFactory.createCompoundBorder(
+    			BorderFactory.createLineBorder(Color.BLACK, 5), 
+			BorderFactory.createEmptyBorder(5, 5, 10, 10)));
+		l3.setBorder(BorderFactory.createCompoundBorder(
+    			BorderFactory.createLineBorder(Color.BLACK, 5), 
+			BorderFactory.createEmptyBorder(5, 5, 10, 10)));
 		JPanel upload=new JPanel(); 		
 		up.setPreferredSize(new Dimension(150, 50));
 		chooser = new JFileChooser(); 
@@ -578,8 +622,9 @@ static ActionListener listener2=new ActionListener()
 					for(int i=0;i<numfiles;i++)
 					{
 						if(button[i]==0)
-						{				
-							choosedfiles.add(listOfFiles[i].toString());
+						{	
+							String upfile=listOfFiles[i].toString();
+							choosedfiles.add(upfile);
 						}
 					}
 					System.out.println(choosedfiles.size()+"adflasdfldsaf");

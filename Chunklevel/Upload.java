@@ -282,53 +282,83 @@ public class Upload
 		{
 			boolean directoryExists = ftpClient.changeWorkingDirectory(base);
 			if(directoryExists)	return ;
+			CheckforDirectory(server,user,pass,base.substring(0,base.lastIndexOf("/")));
 			boolean makeDirectory = ftpClient.makeDirectory(base);
 			System.out.println(base);
 		}
+		ftpClient.logout();
 	}
-	public static void UploadFiles(String base,List<String> files)throws Exception
+	public static void UploadDirectory(String base,String directory)throws Exception
+	{
+		List<String> listoffiles=new ArrayList<String>();
+		File folder=new File(directory);
+		File[] listOfFiles= folder.listFiles();
+		int numfiles=listOfFiles.length;
+		for(int j=0;j<numfiles;j++)
+		{
+			if(listOfFiles[j].isDirectory())
+			{
+				if((listOfFiles[j].getName()).charAt(0)!='.')
+				UploadDirectory(base+"/"+directory.substring(directory.lastIndexOf("/")),listOfFiles[j].getAbsolutePath());
+			}
+			else
+			{
+				if((listOfFiles[j].getName()).charAt(0)!='.')
+				listoffiles.add(listOfFiles[j].getAbsolutePath());
+			}
+		}
+		UploadFiles(base+directory.substring(directory.lastIndexOf("/")),listoffiles);
+	}
+	public static void UploadFiles(String base,List<String> files)
 	{		
-		String ip,user,pass;
-		String response=Client.GetServerDetails();	
-		String responsearr[]=response.split("###",0);
-		ip=responsearr[0];
-		user=responsearr[1];
-		pass=responsearr[2];
-		base=responsearr[3]+base+"/";
-		CheckforDirectory(ip,user,pass,base);
-		Upload client=new Upload();
-		client.getList(base,files);
-		Gson gson=new Gson();
-		hashlist.put("put",gson.toJson(listhashes));	
-		String listsend=gson.toJson(hashlist),duped="";		
-		Socket s=new Socket(ip,9999);  
-		DataInputStream din=new DataInputStream(s.getInputStream());  
-		DataOutputStream dout=new DataOutputStream(s.getOutputStream());  		  
-		bytesuploaded+=listsend.length();
-		listsend=ReedSolomonFunc(listsend);
-		dout.writeUTF(listsend);		 
-		dout.flush();
-		duped=din.readUTF();
-		List<String> duplicated=gson.fromJson(duped, new TypeToken<List<String>>(){}.getType());
-		client.SeparateDedup(duplicated);
-		listsend=gson.toJson(hashoffset);
-		offsetlist.put("process",listsend);
-		listsend=gson.toJson(extensionlist);
-		offsetlist.put("extension",listsend);
-		offsetlist.put("base",base);
-		s=new Socket(ip,9999);  
-		din=new DataInputStream(s.getInputStream());  
-		dout=new DataOutputStream(s.getOutputStream()); 
-		UploadFileList(ip,user,pass,base,files);
-		bytesuploaded+=listsend.length();
-		listsend=gson.toJson(offsetlist);
-		listsend=ReedSolomonFunc(listsend);
-		dout.writeUTF(listsend);
-		dout.flush();
-		duped=din.readUTF();
-		dout.close(); 
-		s.close(); 	
-		System.out.println("Files Uploaded Successfully");
+		try
+		{
+			String ip,user,pass;
+			String response=Client.GetServerDetails();	
+			String responsearr[]=response.split("###",0);
+			ip=responsearr[0];
+			user=responsearr[1];
+			pass=responsearr[2];
+			base=responsearr[3]+base+"/";
+			CheckforDirectory(ip,user,pass,base);
+			Upload client=new Upload();
+			client.getList(base,files);
+			Gson gson=new Gson();
+			hashlist.put("put",gson.toJson(listhashes));	
+			String listsend=gson.toJson(hashlist),duped="";		
+			Socket s=new Socket(ip,9999);  
+			DataInputStream din=new DataInputStream(s.getInputStream());  
+			DataOutputStream dout=new DataOutputStream(s.getOutputStream());  		  
+			bytesuploaded+=listsend.length();
+			listsend=ReedSolomonFunc(listsend);
+			dout.writeUTF(listsend);		 
+			dout.flush();
+			duped=din.readUTF();
+			List<String> duplicated=gson.fromJson(duped, new TypeToken<List<String>>(){}.getType());
+			client.SeparateDedup(duplicated);
+			listsend=gson.toJson(hashoffset);
+			offsetlist.put("process",listsend);
+			listsend=gson.toJson(extensionlist);
+			offsetlist.put("extension",listsend);
+			offsetlist.put("base",base);
+			s=new Socket(ip,9999);  
+			din=new DataInputStream(s.getInputStream());  
+			dout=new DataOutputStream(s.getOutputStream()); 
+			UploadFileList(ip,user,pass,base,files);
+			bytesuploaded+=listsend.length();
+			listsend=gson.toJson(offsetlist);
+			listsend=ReedSolomonFunc(listsend);
+			dout.writeUTF(listsend);
+			dout.flush();
+			duped=din.readUTF();
+			dout.close(); 
+			s.close();	
+			System.out.println("Files Uploaded Successfully");
+		}
+		catch(Exception e)
+		{
+			System.out.println(e);
+		}
 	}
 	public static void main(String args[])throws Exception
 	{  
