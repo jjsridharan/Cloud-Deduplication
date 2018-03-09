@@ -178,6 +178,7 @@ public class Upload
 					System.out.println("Successfull");
 					for(String i : files)
 					{
+						System.out.println(i+"success");
 						File file=new File(i);
 						InputStream in = new FileInputStream(file.getParent()+"//"+stripExtension(file.getName())+".src");
 						ftpClient.setFileType(FTP.BINARY_FILE_TYPE);		
@@ -314,13 +315,15 @@ public class Upload
 		try
 		{
 			String ip,user,pass;
-			String response=Client.GetServerDetails();	
-			String responsearr[]=response.split("###",0);
-			ip=responsearr[0];
-			user=responsearr[1];
-			pass=responsearr[2];
-			base=responsearr[3]+base+"/";
+			//String response=Client.GetServerDetails();	
+			//String responsearr[]=response.split("###",0);
+			ip="192.168.1.100";//responsearr[0];
+			user="sridharan";//responsearr[1];
+			pass="student";//responsearr[2];
+			base="/home/sridharan/server/sridharan995/";//responsearr[3]+base+"/";
+			System.out.println("Inside function");
 			CheckforDirectory(ip,user,pass,base);
+			System.out.println("Inside function");		
 			Upload client=new Upload();
 			client.getList(base,files);
 			Gson gson=new Gson();
@@ -331,7 +334,8 @@ public class Upload
 			DataOutputStream dout=new DataOutputStream(s.getOutputStream());  		  
 			bytesuploaded+=listsend.length();
 			listsend=ReedSolomonFunc(listsend);
-			dout.writeUTF(listsend);		 
+			dout.writeUTF(listsend);
+			 
 			dout.flush();
 			duped=din.readUTF();
 			List<String> duplicated=gson.fromJson(duped, new TypeToken<List<String>>(){}.getType());
@@ -357,13 +361,13 @@ public class Upload
 		}
 		catch(Exception e)
 		{
-			System.out.println(e);
+			e.printStackTrace();
 		}
 	}
 	public static void main(String args[])throws Exception
 	{  
-		List<String> files=addfiles("G:\\Test\\");
-		UploadFiles("/home/student/Server/User1/",files);
+		List<String> files=addfiles(args[0]);
+		UploadFiles("sridharan995",files);
 		System.out.println("Number of Bytes Uploaded :"+bytesuploaded);
 	}
 }  

@@ -56,7 +56,6 @@ public class Client
 		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 		con.setRequestMethod("POST");		
 		con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
-		System.out.println(username);
 		String urlParameters = "username="+username+"&password="+password;
 		con.setDoOutput(true);
 		DataOutputStream wr = new DataOutputStream(con.getOutputStream());
@@ -65,9 +64,7 @@ public class Client
 		wr.close();
 
 		int responseCode = con.getResponseCode();
-		System.out.println("\nSending 'POST' request to URL : " + url);
-		System.out.println("Post parameters : " + urlParameters);
-		System.out.println("Response Code : " + responseCode);
+		
 
 		BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
 		String inputLine;
@@ -82,7 +79,6 @@ public class Client
 		
 		if(!(response.toString().contains("Error")))
 		{
-			System.out.println(response.toString());
 			return response.toString();
 		}
 		else
@@ -196,7 +192,16 @@ public class Client
 	}
 	public static void main(String args[])throws Exception
 	{
-		System.out.println(GetServerDetails());
+		if(args[0].equals("login"))
+		{
+			String response=Login(args[1],args[2]);
+			if(!response.contains("Invalid"))
+			{
+				System.out.print(response);
+			}
+			else
+				System.out.print("0");
+		}
 	}
 
 }
