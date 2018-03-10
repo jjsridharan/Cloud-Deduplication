@@ -83,13 +83,46 @@ app.get("/download.html", function(req, res)
 	    			res.write("<a><button type='button' value=\""+out[i]+"###"+out[i+1]+"\" class='btn btn-link'>"+out[i]+"</button><br/></a>");
 	   		}
 	   		res.write("<br/><br/><strong>Create Folder</strong><br/><br/><form method='post' action='/directory'><input required type='text' name='folder' /><input type='submit' value='Create Folder'/></form>");
-	    		res.write("<br/><br/><strong>Upload Files</strong><br/><br/><form id='frmUploader' enctype='multipart/form-data' action='api/Upload/' method='post'><input type='file' name='imgUploader' multiple required/><input type='submit' name='submit' id='btnSubmit' value='Upload' /> </form></body></html>");
+	    		res.write("<br/><br/><strong>Upload Files</strong><br/><br/><form id='frmUploader' enctype='multipart/form-data' action='api/Upload/' method='post'><input type='file' name='imgUploader' multiple required/><input type='submit' name='submit' id='btnSubmit' value='Upload' /> </form><br/><br/><br/><a href='delete.html'>Delete Files</a></body></html>");
 	    		rimraf(req.cookies['cdir'], function () { console.log('done'); });
 	    		res.end();
 		});	
 	}	
  });
  
+ app.get("/delete.html", function(req, res) 
+{
+	if(!(typeof req.cookies['cdir'] !== 'undefined' && req.cookies['cdir']))
+     		res.sendFile(__dirname + "/index.html");
+     	else
+     	{
+		mkDirByPathSync(req.cookies['cdir']);
+		var exec = require('child_process').execSync;
+		var child = exec('java -cp ".:commons.jar:gson-2.6.2.jar" ListFiles '+req.cookies['cdir']+'  > '+ req.cookies['cdir'] +'/list.txt');
+		fs.readFile(req.cookies['cdir'] +'/list.txt', function (err, data) 
+	 	{
+			if (err) throw err;
+			var out=(data.toString()).split("###");
+			var outl=out.length;
+			console.log(req.cookies['cdir']);
+			var indexof=req.cookies['uname'];
+			if((req.cookies['cdir']).indexOf("/")!=-1)
+			{
+				indexof+=(req.cookies['cdir']).substring((req.cookies['cdir']).indexOf("/"));
+			}
+	    		res.write("<html><head><link href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css' rel='stylesheet'/><script src='https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js'></script> <script>    $(document).ready(function()  {  $('button').on('click',function()  	{  	var val=$(this).val();   	var con=val.split('###');if(con[1]=='true')  	{  	document.getElementById('dname').value=con[0];   	$('#dir').submit();  	}   	else  	{  	if(confirm('Do you really want to delete this file?')){document.getElementById('fname').value=con[0];  	$('#down').submit();  	  }	}  	});  });  </script>  </head>  <body>  <form id='down'action= '/delete' method='post'><input type='text' id='fname' name='fname' hidden/></form><form action='/directory' method='post' id='dir'><input type='text' name='folder' id='dname' hidden/></form><strong>Index Of "+indexof+"</strong><br/><br/>");
+	    		res.write("<a><button type='button' value=\"..###true\" class='btn btn-link'>..</button><br/></a>");   		
+	    		for(var i=0;i<outl-3;i+=2)
+	    		{
+	    			out[i]=out[i].substring(out[i].indexOf(req.cookies['cdir'])+(req.cookies['cdir']).length+1);
+	    			res.write("<a><button type='button' value=\""+out[i]+"###"+out[i+1]+"\" class='btn btn-link'>"+out[i]+"</button><br/></a>");
+	   		}
+	   		res.write("<br/><br/><br/><a href='download.html'>Download & Upload Files</a></body></html>");
+	    		rimraf(req.cookies['cdir'], function () { console.log('done'); });
+	    		res.end();
+		});	
+	}	
+ });
 app.get("/login.html", function(req, res) 
 {
      res.sendFile(__dirname + "/login.html");
@@ -138,6 +171,18 @@ app.post("/download", function(req, res)
    	var file = __dirname +'/'+ req.cookies['cdir']+'/'+fname;  
    	var fileName = fname; 
     	res.download(file, fileName);	
+});
+
+app.post("/delete", function(req, res) 
+{	
+	console.log(req.body.fname);
+	var fname=req.body.fname;
+	fname=fname.substring(fname.lastIndexOf("/")+1);
+	mkDirByPathSync(req.cookies['cdir']);
+ 	var exec = require('child_process').execSync;
+	var child = exec('java -cp ".:commons.jar:gson-2.6.2.jar" DeleteFiles '+req.cookies['cdir']+'/'+fname);   	
+   	res.write("<script> alert('File Deleted Successfully');  setTimeout(function () {         window.location = '/delete.html';  }, 50)</script>");	
+   	res.end();
 });
 
 app.post("/login", function(req, res) 

@@ -3,7 +3,6 @@ import org.apache.commons.net.ftp.FTPReply;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-
 public class DeleteFiles
 {
 	public static String stripExtension (String str) 
@@ -66,10 +65,12 @@ public class DeleteFiles
 			ftpClient.deleteFile(filename);
 		}
 	}	
-    public static void main(String[] args)throws Exception
-    {
+   	public static void main(String[] args)throws Exception
+   	{
+   		String response=Client.GetServerDetails();	
+		String responsearr[]=response.split("###",0);
 		List<String> list=new ArrayList<String>();
-		list.add("/home/sridharan/Server/User1/aa.mp3");
-		//DeleteFileList("127.0.0.1","sridharan","student",list);
-    }
+		list.add(responsearr[3]+args[0]);
+		DeleteFileList(list);
+    	}
 }
