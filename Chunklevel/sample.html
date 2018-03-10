@@ -1,0 +1,36 @@
+<html>
+<head>
+	<script src='https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js'></script>
+	<script>
+			$(document).ready(function()
+			{
+				$('button').on('click',function()
+				{
+					var val=$(this).val();
+					var con=val.split('###');
+					if(con[1]=='true')
+					{
+						document.getElementById('dname').value=con[0];
+						$('#dir').submit();
+						alert('directory');	
+					}
+					else
+					{
+						document.getElementById('fname').value=con[0];
+						$('#down').submit();
+						alert('download');
+					}
+				});
+			});
+	</script>
+</head>
+<body>
+<form id='down' action='/download' method='POST'>
+	<input type='text' id='fname' name='fname' hidden />
+</form>
+<form action='/directory' method='POST' id='dir'>
+	<input type='text' name='dname' id='dname' hidden/>
+</form>
+<button value='adf###false'></button>
+</body>
+</html>
