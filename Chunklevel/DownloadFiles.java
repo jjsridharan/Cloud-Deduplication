@@ -125,15 +125,15 @@ public class DownloadFiles
 	static void DownloadFiles(String base,List<String> listoffiles,String dstlocation)throws Exception
 	{
 		String server,user,pass;
-		//String response=Client.GetServerDetails();	
-		//String responsearr[]=response.split("###",0);
-		server="192.168.117.137";
-		user="student";
-		pass="student";
-	//	if(!base.equals(""))
-		//base=responsearr[3]+base+"/";
-	//	else
-		//base=responsearr[3];
+		String response=Client.GetServerDetails();	
+		String responsearr[]=response.split("###",0);
+		server=responsearr[0];
+		user=responsearr[1];
+		pass=responsearr[2];
+		if(!base.equals(""))
+			base=responsearr[3]+base+"/";
+		else
+			base=responsearr[3];
 		Upload.CheckforDirectory(server,user,pass,base);
 		System.out.println("adf");
 		Socket s=new Socket(server,9999);  
@@ -180,6 +180,6 @@ public class DownloadFiles
 		List<String> listoffiles;
 		listoffiles=new ArrayList<String>();
 		listoffiles.add(args[1]);
-		DownloadFiles("/home/student/server/"+args[0]+"/",listoffiles,args[0]+"/");
+		DownloadFiles(args[0],listoffiles,args[0]+"/");
 	}	
 }

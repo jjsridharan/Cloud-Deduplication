@@ -135,8 +135,6 @@ public class Client
 		con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");		
 		con.setDoOutput(true);
 		int responseCode = con.getResponseCode();
-		System.out.println("\nSending 'POST' request to URL : " + url);
-		System.out.println("Response Code : " + responseCode);
 		BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
 		String inputLine;
 		StringBuffer response = new StringBuffer();
@@ -195,12 +193,16 @@ public class Client
 		if(args[0].equals("login"))
 		{
 			String response=Login(args[1],args[2]);
-			if(!response.contains("Invalid"))
+			if(!response.contains("Invalid Credentials"))
 			{
 				System.out.print(response);
 			}
 			else
 				System.out.print("0");
+		}
+		else if(args[0].equals("signup"))
+		{
+			//Sign Up code
 		}
 	}
 

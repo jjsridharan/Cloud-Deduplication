@@ -315,12 +315,12 @@ public class Upload
 		try
 		{
 			String ip,user,pass;
-			//String response=Client.GetServerDetails();	
-			//String responsearr[]=response.split("###",0);
-			ip="192.168.117.137";//responsearr[0];
-			user="student";//responsearr[1];
-			pass="student";//responsearr[2];
-			base="/home/student/server/sridharan995/";//responsearr[3]+base+"/";
+			String response=Client.GetServerDetails();	
+			String responsearr[]=response.split("###",0);
+			ip=responsearr[0];
+			user=responsearr[1];
+			pass=responsearr[2];
+			base=responsearr[3]+base+"/";
 			System.out.println("Inside function");
 			CheckforDirectory(ip,user,pass,base);
 			System.out.println("Inside function");		
@@ -368,7 +368,7 @@ public class Upload
 	{  
 		System.out.println(args[0]);
 		List<String> files=addfiles(args[0]);
-		UploadFiles("sridharan995",files);
+		UploadFiles(args[0],files);
 		System.out.println("Number of Bytes Uploaded :"+bytesuploaded);
 	}
 }  

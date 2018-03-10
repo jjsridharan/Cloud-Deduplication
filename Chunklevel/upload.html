@@ -20,9 +20,7 @@
                         beforeSubmit: showRequest,
 success: showResponse  }; 
 $('#frmUploader').submit(function () { $(this).ajaxSubmit(options);  return false; }); }); 
- function showRequest(formData, jqForm, options) { alert('Uploading is starting.'); return true; } 
- function showResponse(responseText, statusText, xhr, $form) { alert('status: ' + statusText + '\n\nresponseText: \n' + responseText ); }
-
+ 
 </script>
 </head>
 
