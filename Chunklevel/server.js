@@ -127,6 +127,10 @@ app.get("/login.html", function(req, res)
 {
      res.sendFile(__dirname + "/login.html");
 });
+app.get("/signup.html", function(req, res) 
+{
+     res.sendFile(__dirname + "/signup.html");
+});
 app.get("/", function(req, res) 
 {
      if(!(typeof req.cookies['cdir'] !== 'undefined' && req.cookies['cdir']))
@@ -209,6 +213,47 @@ app.post("/login", function(req, res)
 	});
 
 });
+
+
+
+app.post("/signup", function(req, res) 
+{
+	if(req.body.upass==req.body.cupass)
+	{
+		var exec = require('child_process').execSync;
+		mkDirByPathSync('signup');
+		var child = exec('java -cp ".:commons.jar:gson-2.6.2.jar" Client signup '+ req.body.uname+' '+ req.body.upass+' '+req.body.uphone+' '+req.body.umail+' > signup/'+req.body.uname+'.txt');
+
+		fs.readFile('signup/'+req.body.uname+'.txt', function (err, data) 
+	 	{
+	    		if (err) throw err;
+			var out=data.toString();
+			if(out=="Successfully Registered")
+	    		{
+	    			res.write("<script> alert('User Registration Successful. Please Login using the credentials');  window.location = '/login.html'; </script>");
+	   		}
+	   		else if(out=="username already exists. Please try different username")
+			{
+			    	res.write("<script> alert('User name already exists. Please try a different name'); window.location = '/signup.html';</script>");
+			}
+			else
+				res.write("<script> alert('Error Try again later.'); window.location = '/';</script>");
+	    		res.end();
+		});
+	}
+	else
+	{
+		res.write("<script> alert('Passwords dont match');  window.location = '/signup.html'; </script>");			
+		res.end();
+	}
+
+});
+
+
+
+
+
+
 app.post("/directory", function(req, res) 
 {
 	if(req.body.folder=="..")
@@ -229,5 +274,4 @@ app.post("/directory", function(req, res)
      console.log("Listening to port 2000");
 
  });
-
 

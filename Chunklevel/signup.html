@@ -4,10 +4,13 @@
 
 <body>
    <strong><center>SNS CLOUD SERVICE</center></strong>
-  <form>
-  	<input type="text" placeholder="Username" /><br/>
-  	<input type="password" placeholder="Password" />
-  	<input type="submit" value="Login"/> 
+  <form action="/signup" enctype="application/json" method="post">
+  	<input type="text" placeholder="Username" name="uname" required/><br/>
+  	<input type="password" placeholder="Password" name="upass" required/><br/>
+  	<input type="password" placeholder="Confirm Password" name="cupass" required/><br/>
+  	<input type="tel" placeholder="Phone number" name="uphone" required/><br/>
+  	<input type="email" placeholder="Mail id" name="umail" required/><br/>
+  	<input type="submit" value="Signup"/> 
   </form>
 
 </body>
