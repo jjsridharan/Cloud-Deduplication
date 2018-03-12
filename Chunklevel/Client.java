@@ -140,7 +140,7 @@ public class Client
 		return response.toString();
 		
 	}
-	public static void ForgotPassword(String username,String password,String secquest)throws Exception
+	public static String ForgotPassword(String username,String secquest)throws Exception
 	{
 		secquest=secquest.toLowerCase();
 		String url = "https://clouddeduplication.000webhostapp.com/forgotpassword.php";
@@ -148,7 +148,6 @@ public class Client
 		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 		con.setRequestMethod("POST");		
 		con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
-		System.out.println(username);
 		String urlParameters = "username="+username+"&secquest="+secquest;
 		con.setDoOutput(true);
 		DataOutputStream wr = new DataOutputStream(con.getOutputStream());
@@ -157,9 +156,6 @@ public class Client
 		wr.close();
 
 		int responseCode = con.getResponseCode();
-		System.out.println("\nSending 'POST' request to URL : " + url);
-		System.out.println("Post parameters : " + urlParameters);
-		System.out.println("Response Code : " + responseCode);
 
 		BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
 		String inputLine;
@@ -169,17 +165,13 @@ public class Client
 			response.append(inputLine);
 		}
 		in.close();
-
-		//print result
-		System.out.println(response.toString());
-		if(response.toString().contains("Success"))
+		if(!((response.toString()).contains("Error")))
 		{
-			ChangePassword(username,password);
-			System.out.println("Successfully Password Changed");
+			return response.toString();
 		}
 		else
 		{
-			System.out.println("Error in Changing Password");
+			return "Invalid Credentials";
 		}
 	}
 	public static void main(String args[])throws Exception
@@ -196,8 +188,6 @@ public class Client
 		}
 		else if(args[0].equals("signup"))
 		{
-			//Sign Up code
-			
 			String response=RegisterUser(args[1],args[2],args[3],args[4]);
 			if(response.contains("Successfully Registered"))
 			{
@@ -210,6 +200,11 @@ public class Client
 			else
 				System.out.print("0");
 			
+		}
+		else if(args[0].equals("forgot"))
+		{			
+			String response=ForgotPassword(args[1],args[2]);
+			System.out.print(response);			
 		}
 	}
 

@@ -83,7 +83,7 @@ app.get("/download.html", function(req, res)
 	    			res.write("<a><button type='button' value=\""+out[i]+"###"+out[i+1]+"\" class='btn btn-link'>"+out[i]+"</button><br/></a>");
 	   		}
 	   		res.write("<br/><br/><strong>Create Folder</strong><br/><br/><form method='post' action='/directory'><input required type='text' name='folder' /><input type='submit' value='Create Folder'/></form>");
-	    		res.write("<br/><br/><strong>Upload Files</strong><br/><br/><form id='frmUploader' enctype='multipart/form-data' action='api/Upload/' method='post'><input type='file' name='imgUploader' multiple required/><input type='submit' name='submit' id='btnSubmit' value='Upload' /> </form><br/><br/><br/><a href='delete.html'>Delete Files</a></body></html>");
+	    		res.write("<br/><br/><strong>Upload Files</strong><br/><br/><form id='frmUploader' enctype='multipart/form-data' action='api/Upload/' method='post'><input type='file' name='imgUploader' multiple required/><input type='submit' name='submit' id='btnSubmit' value='Upload' /> </form><br/><br/><br/><a href='delete.html'>Delete Files</a><br/><br/><br/><a href='logout'>Logout</a></body></html>");
 	    		rimraf(req.cookies['cdir'], function () { console.log('done'); });
 	    		res.end();
 		});	
@@ -117,7 +117,7 @@ app.get("/download.html", function(req, res)
 	    			out[i]=out[i].substring(out[i].indexOf(req.cookies['cdir'])+(req.cookies['cdir']).length+1);
 	    			res.write("<a><button type='button' value=\""+out[i]+"###"+out[i+1]+"\" class='btn btn-link'>"+out[i]+"</button><br/></a>");
 	   		}
-	   		res.write("<br/><br/><br/><a href='download.html'>Download & Upload Files</a></body></html>");
+	   		res.write("<br/><br/><br/><a href='download.html'>Download & Upload Files</a><br/><br/><br/><a href='logout'>Logout</a></body></html>");
 	    		rimraf(req.cookies['cdir'], function () { console.log('done'); });
 	    		res.end();
 		});	
@@ -125,11 +125,24 @@ app.get("/download.html", function(req, res)
  });
 app.get("/login.html", function(req, res) 
 {
-     res.sendFile(__dirname + "/login.html");
+     if(!(typeof req.cookies['cdir'] !== 'undefined' && req.cookies['cdir']))
+     	res.sendFile(__dirname + "/login.html");
+     else
+     res.redirect("/download.html");
 });
+app.get("/forgot.html", function(req, res) 
+{
+     if(!(typeof req.cookies['cdir'] !== 'undefined' && req.cookies['cdir']))
+     	res.sendFile(__dirname + "/forgot.html");
+     else
+     	res.redirect("/download.html");
+});	
 app.get("/signup.html", function(req, res) 
 {
-     res.sendFile(__dirname + "/signup.html");
+      if(!(typeof req.cookies['cdir'] !== 'undefined' && req.cookies['cdir']))
+     	res.sendFile(__dirname + "/signup.html");
+     else
+     	res.redirect("/download.html");
 });
 app.get("/", function(req, res) 
 {
@@ -213,8 +226,36 @@ app.post("/login", function(req, res)
 	});
 
 });
+app.post("/forgot", function(req, res) 
+{
+	var exec = require('child_process').execSync;
+	mkDirByPathSync('login');
+	var child = exec('java -cp ".:commons.jar:gson-2.6.2.jar" Client forgot '+ req.body.uname+' '+ req.body.umobile+' > login/'+req.body.uname+'forgot.txt');
 
+        fs.readFile('login/'+req.body.uname+'forgot.txt', function (err, data) 
+ 	{
+    		if (err) throw err;
+			var out=data.toString();
+		if(out=="Invalid Credentials")
+    		{
+    			res.write("<script> alert('Invalid Credentials');  setTimeout(function () {         window.location = '/';  }, 50)</script>");
+   		}
+   		else
+		{
+		    	res.write("<script> alert('Your Password is \""+out+"\"');  setTimeout(function () {         window.location = '/';  }, 50)</script>");
+		}
+    		res.end();
+	});
 
+});
+
+app.get("/logout", function(req, res) 
+{
+	res.clearCookie("cdir");
+	res.clearCookie("uname");
+	res.write("<script> alert('Successfully Logged out');  setTimeout(function () {         window.location = '/';  }, 50)</script>");
+	res.end();
+});
 
 app.post("/signup", function(req, res) 
 {
@@ -267,6 +308,9 @@ app.post("/directory", function(req, res)
 	else
 		res.cookie('cdir',req.cookies['cdir']+'/'+req.body.folder);
 	res.redirect('/download.html');
+});
+app.get('*', function(req, res) {
+    res.redirect('/');
 });
 
  app.listen(2000, function(a) {
