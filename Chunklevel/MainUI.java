@@ -31,7 +31,7 @@ public class MainUI
 	static JButton folderchooser1;
 	static Border emptyBorder = BorderFactory.createEmptyBorder();	
 	static JFrame jf = new JFrame();
-	static String base;
+	static String base,username;
 	static List<ListingFile> listfromserver;
 	static String dirname;
 	static JSplitPane splitPane2;
@@ -61,6 +61,8 @@ public class MainUI
 					try
 					{
 						String folder=((JButton) menu.getInvoker()).getText();
+						String log="Downloading "+folder;
+						System.out.println(Client.LogActivity(username,log));
 						DownloadFiles.DownloadDirectory(folder,folder.substring(folder.lastIndexOf('/')+1));
 					}
 					catch(Exception ex)
@@ -78,7 +80,9 @@ public class MainUI
 				{
 					try
 					{
-						String folder=((JButton) menu.getInvoker()).getText();
+						String folder=((JButton) menu.getInvoker()).getText();				
+						String log="Deleting "+folder;
+						System.out.println(Client.LogActivity(username,log));
 						DeleteFiles.DeleteDirectory(folder,folder.substring(folder.lastIndexOf('/')));
 						listfromserver=ListFiles.ListFilesandDirectory(dirname);
 						Filllist2();
@@ -103,6 +107,8 @@ public class MainUI
 					try
 					{
 						Integer folder=Integer.parseInt(((JButton) upmenu.getInvoker()).getName());
+						String log="Uploading "+listOfFiles[folder].getAbsolutePath()+"to "+dirname;
+						System.out.println(Client.LogActivity(username,log));
 						Upload.UploadDirectory(dirname,listOfFiles[folder].getAbsolutePath());
 						System.out.println(listOfFiles[folder].getAbsolutePath());
 					}
@@ -440,8 +446,8 @@ static ActionListener listener2=new ActionListener()
 	
 	public static void main(String args[])
 	{	
-		base=args[1];
-		
+		base=args[1];	
+		username=args[2];	
 		l1.setBorder(BorderFactory.createCompoundBorder(
     			BorderFactory.createLineBorder(Color.BLACK, 5), 
 			BorderFactory.createEmptyBorder(5, 5, 10, 10)));
@@ -627,7 +633,8 @@ static ActionListener listener2=new ActionListener()
 							choosedfiles.add(upfile);
 						}
 					}
-					System.out.println(choosedfiles.size()+"adflasdfldsaf");
+					String log="Uploading "+choosedfiles.size()+" files to "+dirname;
+					System.out.println(Client.LogActivity(username,log));
 					Upload.UploadFiles(dirname,choosedfiles);
 					Filllist(choosertitle);
               			listfromserver=ListFiles.ListFilesandDirectory(dirname);
@@ -643,6 +650,8 @@ static ActionListener listener2=new ActionListener()
 							choosedfiles.add(fname.substring(fname.lastIndexOf('/')+1));						}
 					}
 					System.out.println("india"+dirname);
+					String log="Downloading "+choosedfiles.size()+" files from "+dirname;
+					System.out.println(Client.LogActivity(username,log));
 					DownloadFiles.DownloadFiles(dirname,choosedfiles,((System.getProperty("user.home")).replace("\\","/"))+"/Downloads/");
 					listfromserver=ListFiles.ListFilesandDirectory(dirname);
 					Filllistfromserver();
@@ -657,6 +666,8 @@ static ActionListener listener2=new ActionListener()
 							choosedfiles.add((listfromserver.get(i)).name);
 						}
 					}
+					String log="Deleting "+choosedfiles.size()+" files from "+dirname;
+					System.out.println(Client.LogActivity(username,log));					
 					DeleteFiles.DeleteFileList(choosedfiles);
 					listfromserver=ListFiles.ListFilesandDirectory(dirname);
 					Filllistfromserver();

@@ -175,5 +175,7 @@ public class DownloadFiles
 		listoffiles=new ArrayList<String>();
 		listoffiles.add(args[1]);
 		DownloadFiles(args[0],listoffiles,args[0]+"/");
+		String log="Downloading "+listoffiles.size()+" files to "+args[2];
+		System.out.println(Client.LogActivity(args[1],log));
 	}	
 }

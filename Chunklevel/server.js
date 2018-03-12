@@ -62,6 +62,11 @@ app.get("/download.html", function(req, res)
      	else
      	{
 		mkDirByPathSync(req.cookies['cdir']);
+		var indexof=req.cookies['uname'];
+		if((req.cookies['cdir']).indexOf("/")!=-1)
+		{
+			indexof+=(req.cookies['cdir']).substring((req.cookies['cdir']).indexOf("/"));
+		}
 		var exec = require('child_process').execSync;
 		var child = exec('java -cp ".:commons.jar:gson-2.6.2.jar" ListFiles '+req.cookies['cdir']+'  > '+ req.cookies['cdir'] +'/list.txt');
 		fs.readFile(req.cookies['cdir'] +'/list.txt', function (err, data) 
@@ -70,11 +75,7 @@ app.get("/download.html", function(req, res)
 			var out=(data.toString()).split("###");
 			var outl=out.length;
 			console.log(req.cookies['cdir']);
-			var indexof=req.cookies['uname'];
-			if((req.cookies['cdir']).indexOf("/")!=-1)
-			{
-				indexof+=(req.cookies['cdir']).substring((req.cookies['cdir']).indexOf("/"));
-			}
+			
 	    		res.write("<html><head><link href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css' rel='stylesheet'/><script src='https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js'></script> <script>    $(document).ready(function()  {  $('button').on('click',function()  	{  	var val=$(this).val();   	var con=val.split('###');if(con[1]=='true')  	{  	document.getElementById('dname').value=con[0];   	$('#dir').submit();  	}   	else  	{  	document.getElementById('fname').value=con[0];  	$('#down').submit();  	  	}  	});  });  </script>  </head>  <body>  <form id='down'action= '/download' method='post'><input type='text' id='fname' name='fname' hidden/></form><form action='/directory' method='post' id='dir'><input type='text' name='folder' id='dname' hidden/></form><strong>Index Of "+indexof+"</strong><br/><br/>");
 	    		res.write("<a><button type='button' value=\"..###true\" class='btn btn-link'>..</button><br/></a>");   		
 	    		for(var i=0;i<outl-3;i+=2)
@@ -170,7 +171,7 @@ app.post("/api/Upload", function(req, res)
 	        else
          	{
 			var exec = require('child_process').execSync;
-			var child = exec('java -cp ".:commons.jar:gson-2.6.2.jar" Upload '+req.cookies['cdir']);
+			var child = exec('java -cp ".:commons.jar:gson-2.6.2.jar" Upload '+req.cookies['cdir']+' '+req.cookies['uname']+' '+indexof);
 			res.write("<script> alert('Files Uploaded Successfully');  setTimeout(function () {         window.location = '/download.html';  }, 50)</script>");
 		}
 		res.end();
@@ -184,7 +185,7 @@ app.post("/download", function(req, res)
 	fname=fname.substring(fname.lastIndexOf("/")+1);
 	mkDirByPathSync(req.cookies['cdir']);
  	var exec = require('child_process').execSync;
-	var child = exec('java -cp ".:commons.jar:gson-2.6.2.jar" DownloadFiles '+req.cookies['cdir']+' '+fname);   	
+	var child = exec('java -cp ".:commons.jar:gson-2.6.2.jar" DownloadFiles '+req.cookies['cdir']+' '+fname+' '+req.cookies['uname']+' '+indexof);   	
    	var file = __dirname +'/'+ req.cookies['cdir']+'/'+fname;  
    	var fileName = fname; 
     	res.download(file, fileName);	
@@ -197,7 +198,7 @@ app.post("/delete", function(req, res)
 	fname=fname.substring(fname.lastIndexOf("/")+1);
 	mkDirByPathSync(req.cookies['cdir']);
  	var exec = require('child_process').execSync;
-	var child = exec('java -cp ".:commons.jar:gson-2.6.2.jar" DeleteFiles '+req.cookies['cdir']+'/'+fname);   	
+	var child = exec('java -cp ".:commons.jar:gson-2.6.2.jar" DeleteFiles '+req.cookies['cdir']+'/'+fname+' '+req.cookies['uname']+' '+indexof);   	
    	res.write("<script> alert('File Deleted Successfully');  setTimeout(function () {         window.location = '/delete.html';  }, 50)</script>");	
    	res.end();
 });
@@ -228,24 +229,29 @@ app.post("/login", function(req, res)
 });
 app.post("/forgot", function(req, res) 
 {
-	var exec = require('child_process').execSync;
-	mkDirByPathSync('login');
-	var child = exec('java -cp ".:commons.jar:gson-2.6.2.jar" Client forgot '+ req.body.uname+' '+ req.body.umobile+' > login/'+req.body.uname+'forgot.txt');
+	if((typeof req.cookies['cdir'] !== 'undefined' && req.cookies['cdir']))
+     		res.redirect("/index.html");
+     	else
+	{
+		var exec = require('child_process').execSync;
+		mkDirByPathSync('login');
+		var child = exec('java -cp ".:commons.jar:gson-2.6.2.jar" Client forgot '+ req.body.uname+' '+ req.body.umobile+' > login/'+req.body.uname+'forgot.txt');
 
-        fs.readFile('login/'+req.body.uname+'forgot.txt', function (err, data) 
- 	{
-    		if (err) throw err;
-			var out=data.toString();
-		if(out=="Invalid Credentials")
-    		{
-    			res.write("<script> alert('Invalid Credentials');  setTimeout(function () {         window.location = '/';  }, 50)</script>");
-   		}
-   		else
-		{
-		    	res.write("<script> alert('Your Password is \""+out+"\"');  setTimeout(function () {         window.location = '/';  }, 50)</script>");
-		}
-    		res.end();
-	});
+		fs.readFile('login/'+req.body.uname+'forgot.txt', function (err, data) 
+	 	{
+	    		if (err) throw err;
+				var out=data.toString();
+			if(out=="Invalid Credentials")
+	    		{
+	    			res.write("<script> alert('Invalid Credentials');  setTimeout(function () {         window.location = '/';  }, 50)</script>");
+	   		}
+	   		else
+			{
+			    	res.write("<script> alert('Your Password is \""+out+"\"');  setTimeout(function () {         window.location = '/';  }, 50)</script>");
+			}
+	    		res.end();
+		});
+	}
 
 });
 
@@ -290,10 +296,38 @@ app.post("/signup", function(req, res)
 
 });
 
-
-
-
-
+app.get("/showlog.html",function(req,res)
+{
+	if(!(typeof req.cookies['cdir'] !== 'undefined' && req.cookies['cdir']))
+     		res.sendFile(__dirname + "/login.html");
+    	else
+	{
+		var exec = require('child_process').execSync;
+		mkDirByPathSync('login');
+		var child = exec('java -cp ".:commons.jar:gson-2.6.2.jar" Client showlog '+ req.cookies['uname']+' > login/'+req.cookies['uname']+'log.txt');
+		fs.readFile('login/'+req.cookies['uname']+'log.txt', function (err, data) 
+	 	{
+	    		if (err) throw err;
+				var out=data.toString();
+			if(out=="unable to fetch log")
+	    		{
+	    			res.write("<script> alert('Unable to fetch log');  setTimeout(function () {         window.location = '/';  }, 50)</script>");
+	   		}
+	   		else
+			{
+				res.write("<html><body>");
+			    	var out=(data.toString()).split("###");
+				var outl=out.length;
+				for(var i=0;i<outl;i++)
+	    			{	    				
+		    			res.write(out[i]+"<br/><br/>");
+		   		}
+				res.write("<br/><br/><a href='/'>Back to Home</a></body></html>");
+			}
+	    		res.end();
+		});
+	}
+});
 
 app.post("/directory", function(req, res) 
 {

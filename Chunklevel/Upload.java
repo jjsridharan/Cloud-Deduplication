@@ -314,7 +314,7 @@ public class Upload
 	{		
 		try
 		{
-			String ip,user,pass;
+			String ip,user,pass,log;			
 			String response=Client.GetServerDetails();	
 			String responsearr[]=response.split("###",0);
 			ip=responsearr[0];
@@ -334,8 +334,7 @@ public class Upload
 			DataOutputStream dout=new DataOutputStream(s.getOutputStream());  		  
 			bytesuploaded+=listsend.length();
 			listsend=ReedSolomonFunc(listsend);
-			dout.writeUTF(listsend);
-			 
+			dout.writeUTF(listsend);			 
 			dout.flush();
 			duped=din.readUTF();
 			List<String> duplicated=gson.fromJson(duped, new TypeToken<List<String>>(){}.getType());
@@ -356,7 +355,7 @@ public class Upload
 			dout.flush();
 			duped=din.readUTF();
 			dout.close(); 
-			s.close();	
+			s.close();			
 			System.out.println("Files Uploaded Successfully");
 		}
 		catch(Exception e)
@@ -369,6 +368,8 @@ public class Upload
 		System.out.println(args[0]);
 		List<String> files=addfiles(args[0]);
 		UploadFiles(args[0],files);
-		System.out.println("Number of Bytes Uploaded :"+bytesuploaded);
+		String log="Uploading "+files.size()+" files to "+args[2];
+		System.out.println(Client.LogActivity(args[1],log));
+					
 	}
 }  

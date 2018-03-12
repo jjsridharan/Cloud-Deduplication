@@ -50,6 +50,7 @@ public class loginuser{
 				{
 					arg[0]="Successfully Logged in!";
 					arg[1]=response;
+					arg[2]=uname;
 					jf.dispose();
 					MainUI ui=new MainUI();
 					ui.main(arg);	

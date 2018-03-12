@@ -80,6 +80,76 @@ public class Client
 			return "Invalid Credentials";
 		}
 	}
+	public static String LogActivity(String username,String log)throws Exception
+	{
+		String url = "https://clouddeduplication.000webhostapp.com/logdetails.php";
+ 		URL obj = new URL(url);
+		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+		con.setRequestMethod("POST");		
+		con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
+		String urlParameters = "username="+username+"&log="+log;
+		con.setDoOutput(true);
+		DataOutputStream wr = new DataOutputStream(con.getOutputStream());
+		wr.writeBytes(urlParameters);
+		wr.flush();
+		wr.close();
+
+		int responseCode = con.getResponseCode();
+		
+
+		BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+		String inputLine;
+		StringBuffer response = new StringBuffer();
+		while ((inputLine = in.readLine()) != null) 
+		{
+			response.append(inputLine);
+		}
+		in.close();
+
+		if(!(response.toString().contains("Error")))
+		{
+			return response.toString();
+		}
+		else
+		{
+			return "Error in logging data. This activity will not be logged.";
+		}
+	}
+	public static String ShowLog(String username)throws Exception
+	{
+		String url = "https://clouddeduplication.000webhostapp.com/showlog.php";
+ 		URL obj = new URL(url);
+		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+		con.setRequestMethod("POST");		
+		con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
+		String urlParameters = "username="+username;
+		con.setDoOutput(true);
+		DataOutputStream wr = new DataOutputStream(con.getOutputStream());
+		wr.writeBytes(urlParameters);
+		wr.flush();
+		wr.close();
+
+		int responseCode = con.getResponseCode();
+		
+
+		BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+		String inputLine;
+		StringBuffer response = new StringBuffer();
+		while ((inputLine = in.readLine()) != null) 
+		{
+			response.append(inputLine);
+		}
+		in.close();
+
+		if(!(response.toString().contains("Error")))
+		{
+			return response.toString();
+		}
+		else
+		{
+			return "unable to fetch log";
+		}
+	}
 	public static void ChangePassword(String username,String password)throws Exception
 	{
 		String url = "https://clouddeduplication.000webhostapp.com/changepassword.php";
@@ -204,6 +274,16 @@ public class Client
 		else if(args[0].equals("forgot"))
 		{			
 			String response=ForgotPassword(args[1],args[2]);
+			System.out.print(response);			
+		}
+		else if(args[0].equals("logactivity"))
+		{			
+			String response=LogActivity(args[1],args[2]);
+			System.out.print(response);			
+		}
+		else if(args[0].equals("showlog"))
+		{			
+			String response=ShowLog(args[1]);
 			System.out.print(response);			
 		}
 	}

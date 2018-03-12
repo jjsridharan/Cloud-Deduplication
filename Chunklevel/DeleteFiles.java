@@ -72,5 +72,7 @@ public class DeleteFiles
 		List<String> list=new ArrayList<String>();
 		list.add(responsearr[3]+args[0]);
 		DeleteFileList(list);
+		String log="Downloading "+list.size()+" files to "+args[2];
+		System.out.println(Client.LogActivity(args[1],log));
     	}
 }
