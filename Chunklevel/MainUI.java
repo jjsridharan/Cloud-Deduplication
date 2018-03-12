@@ -106,8 +106,13 @@ public class MainUI
 				{
 					try
 					{
-						Integer folder=Integer.parseInt(((JButton) upmenu.getInvoker()).getName());
-						String log="Uploading "+listOfFiles[folder].getAbsolutePath()+"to "+dirname;
+						Integer folder=Integer.parseInt(((JButton) upmenu.getInvoker()).getName());	
+						String indexof=username;
+						if(dirname.indexOf("/")!=-1)
+						{
+							indexof=username+dirname.substring(dirname.indexOf("/"));
+						}
+						String log="Uploading "+listOfFiles[folder].getAbsolutePath()+" to "+indexof;
 						System.out.println(Client.LogActivity(username,log));
 						Upload.UploadDirectory(dirname,listOfFiles[folder].getAbsolutePath());
 						System.out.println(listOfFiles[folder].getAbsolutePath());
@@ -633,7 +638,12 @@ static ActionListener listener2=new ActionListener()
 							choosedfiles.add(upfile);
 						}
 					}
-					String log="Uploading "+choosedfiles.size()+" files to "+dirname;
+					String indexof=username;
+					if(dirname.indexOf("/")!=-1)
+					{
+						indexof=username+dirname.substring(dirname.indexOf("/"));
+					}
+					String log="Uploading "+choosedfiles.size()+" files to "+indexof;
 					System.out.println(Client.LogActivity(username,log));
 					Upload.UploadFiles(dirname,choosedfiles);
 					Filllist(choosertitle);
@@ -650,7 +660,12 @@ static ActionListener listener2=new ActionListener()
 							choosedfiles.add(fname.substring(fname.lastIndexOf('/')+1));						}
 					}
 					System.out.println("india"+dirname);
-					String log="Downloading "+choosedfiles.size()+" files from "+dirname;
+					String indexof=username;
+					if(dirname.indexOf("/")!=-1)
+					{
+						indexof=username+dirname.substring(dirname.indexOf("/"));
+					}
+					String log="Downloading "+choosedfiles.size()+" files from "+indexof;
 					System.out.println(Client.LogActivity(username,log));
 					DownloadFiles.DownloadFiles(dirname,choosedfiles,((System.getProperty("user.home")).replace("\\","/"))+"/Downloads/");
 					listfromserver=ListFiles.ListFilesandDirectory(dirname);
@@ -666,7 +681,12 @@ static ActionListener listener2=new ActionListener()
 							choosedfiles.add((listfromserver.get(i)).name);
 						}
 					}
-					String log="Deleting "+choosedfiles.size()+" files from "+dirname;
+					String indexof=username;
+					if(dirname.indexOf("/")!=-1)
+					{
+						indexof=username+dirname.substring(dirname.indexOf("/"));
+					}
+					String log="Deleting "+choosedfiles.size()+" files from "+indexof;
 					System.out.println(Client.LogActivity(username,log));					
 					DeleteFiles.DeleteFileList(choosedfiles);
 					listfromserver=ListFiles.ListFilesandDirectory(dirname);
