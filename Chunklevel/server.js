@@ -98,6 +98,11 @@ app.get("/download.html", function(req, res)
      	else
      	{
 		mkDirByPathSync(req.cookies['cdir']);
+		var indexof=req.cookies['uname'];
+		if((req.cookies['cdir']).indexOf("/")!=-1)
+		{
+			indexof+=(req.cookies['cdir']).substring((req.cookies['cdir']).indexOf("/"));
+		}
 		var exec = require('child_process').execSync;
 		var child = exec('java -cp ".:commons.jar:gson-2.6.2.jar" ListFiles '+req.cookies['cdir']+'  > '+ req.cookies['cdir'] +'/list.txt');
 		fs.readFile(req.cookies['cdir'] +'/list.txt', function (err, data) 
@@ -170,6 +175,11 @@ app.post("/api/Upload", function(req, res)
 		}
 	        else
          	{
+			var indexof=req.cookies['uname'];
+			if((req.cookies['cdir']).indexOf("/")!=-1)
+			{
+				indexof+=(req.cookies['cdir']).substring((req.cookies['cdir']).indexOf("/"));
+			}
 			var exec = require('child_process').execSync;
 			var child = exec('java -cp ".:commons.jar:gson-2.6.2.jar" Upload '+req.cookies['cdir']+' '+req.cookies['uname']+' '+indexof);
 			res.write("<script> alert('Files Uploaded Successfully');  setTimeout(function () {         window.location = '/download.html';  }, 50)</script>");
@@ -184,6 +194,11 @@ app.post("/download", function(req, res)
 	var fname=req.body.fname;
 	fname=fname.substring(fname.lastIndexOf("/")+1);
 	mkDirByPathSync(req.cookies['cdir']);
+	var indexof=req.cookies['uname'];
+	if((req.cookies['cdir']).indexOf("/")!=-1)
+	{
+		indexof+=(req.cookies['cdir']).substring((req.cookies['cdir']).indexOf("/"));
+	}
  	var exec = require('child_process').execSync;
 	var child = exec('java -cp ".:commons.jar:gson-2.6.2.jar" DownloadFiles '+req.cookies['cdir']+' '+fname+' '+req.cookies['uname']+' '+indexof);   	
    	var file = __dirname +'/'+ req.cookies['cdir']+'/'+fname;  
@@ -197,6 +212,11 @@ app.post("/delete", function(req, res)
 	var fname=req.body.fname;
 	fname=fname.substring(fname.lastIndexOf("/")+1);
 	mkDirByPathSync(req.cookies['cdir']);
+	var indexof=req.cookies['uname'];
+	if((req.cookies['cdir']).indexOf("/")!=-1)
+	{
+		indexof+=(req.cookies['cdir']).substring((req.cookies['cdir']).indexOf("/"));
+	}
  	var exec = require('child_process').execSync;
 	var child = exec('java -cp ".:commons.jar:gson-2.6.2.jar" DeleteFiles '+req.cookies['cdir']+'/'+fname+' '+req.cookies['uname']+' '+indexof);   	
    	res.write("<script> alert('File Deleted Successfully');  setTimeout(function () {         window.location = '/delete.html';  }, 50)</script>");	

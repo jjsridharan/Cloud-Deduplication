@@ -176,6 +176,6 @@ public class DownloadFiles
 		listoffiles.add(args[1]);
 		DownloadFiles(args[0],listoffiles,args[0]+"/");
 		String log="Downloading "+listoffiles.size()+" files to "+args[2];
-		System.out.println(Client.LogActivity(args[1],log));
+		System.out.println(Client.LogActivity(args[3],log));
 	}	
 }

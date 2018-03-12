@@ -44,7 +44,7 @@ public class loginuser{
 			{
 				String uname=namet.getText(),upass=passt.getText();
 				String response=Client.Login(uname,upass);
-				String arg[]=new String[2];
+				String arg[]=new String[3];
 				prompt pm=new prompt();	
 				if(!response.contains("Invalid"))
 				{
