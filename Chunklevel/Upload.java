@@ -92,7 +92,7 @@ public class Upload
 			index = (file.getName()).lastIndexOf('.');
 			String extension=(file.getName()).substring(index+1);
 			System.out.println("Getting Hash Values for "+file.getName());		
-			String metapath=file.getParent()+"/"+stripExtension(file.getName())+".src";
+			String metapath=file.getParent()+"/"+file.getName()+".src";
 			File metafile=new File(metapath);
 			metafile.createNewFile();
 			fw = new FileWriter(metapath);
@@ -120,7 +120,7 @@ public class Upload
 			fis.close();
 			bw.close();
 			fw.close();
-			metapath=base+"/"+stripExtension(file.getName())+".src";
+			metapath=base+"/"+file.getName()+".src";
 			extensionlist.put(metapath,extension);
 			fileslist.add(metapath);
 		}
@@ -180,13 +180,13 @@ public class Upload
 					{
 						System.out.println(i+"success");
 						File file=new File(i);
-						InputStream in = new FileInputStream(file.getParent()+"//"+stripExtension(file.getName())+".src");
+						InputStream in = new FileInputStream(file.getParent()+"/"+file.getName()+".src");
 						ftpClient.setFileType(FTP.BINARY_FILE_TYPE);		
 		        			ftpClient.enterLocalPassiveMode();
-		        			boolean Store = ftpClient.storeFile(base+stripExtension(file.getName())+".src", in);
+		        			boolean Store = ftpClient.storeFile(base+file.getName()+".src", in);
 						System.out.println(ftpClient.getReplyString());
-						file=new File(file.getParent()+"/"+stripExtension(file.getName())+".src");
-						System.out.println(file.getParent()+"/"+stripExtension(file.getName())+".src");
+						file=new File(file.getParent()+"/"+file.getName()+".src");
+						System.out.println(file.getParent()+"/"+file.getName()+".src");
 						bytesuploaded+=file.length();
 						in.close();
 						file.delete();

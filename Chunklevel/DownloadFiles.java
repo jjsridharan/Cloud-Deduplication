@@ -32,7 +32,6 @@ public class DownloadFiles
 		shardSize = (storedSize + DATA_SHARDS - 1) / DATA_SHARDS;
   		final int bufferSize = shardSize * DATA_SHARDS;
         	final byte [] allBytes = new byte[bufferSize];
-        	//System.out.println(allBytes.length);
 		final byte [] temp = listsend.getBytes();
 		ByteBuffer.wrap(allBytes).putInt(fileSize);
 		
@@ -43,12 +42,8 @@ public class DownloadFiles
 		for (int i = 0; i < DATA_SHARDS; i++) {
             		System.arraycopy(allBytes, i * shardSize, shards[i], 0, shardSize);
         	}
-
-		//Encoder called
 		ReedSolomon reedSolomon = ReedSolomon.create(DATA_SHARDS, PARITY_SHARDS);
         	reedSolomon.encodeParity(shards, 0, shardSize);
-		//Encoded
-		
 		String str2="";
 		char shardNumber='a';
 		int initlen=0;
@@ -56,7 +51,6 @@ public class DownloadFiles
 		str2=str2+"###"+shardNumber+"###"+DatatypeConverter.printBase64Binary(shards[i]);
 		if(initlen==0)
 			initlen=str2.length()-6;
-		//System.out.println("\n Shard Length : "+shards[i].length+" String Length : "+initlen);
 	    shardNumber++;
 		}
 	

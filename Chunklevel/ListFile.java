@@ -23,7 +23,7 @@ public class ListFile
 			{
 			if(file.isFile())
 			{
-				String filename=stripExtension(file.getAbsolutePath())+"."+RetrieveAttribute.Retrieve(file.getAbsolutePath());
+				String filename=stripExtension(stripExtension(file.getAbsolutePath()))+"."+RetrieveAttribute.Retrieve(file.getAbsolutePath());
 				result.add(new ListingFile(filename,false));
 			}
 			else
@@ -43,7 +43,7 @@ public class ListFile
 	
 	public static void main(String args[])throws Exception
 	{
-			List<ListingFile> res=ListFilesandDirectory("/home/sridharan/server/sridharan995/");
+		List<ListingFile> res=ListFilesandDirectory("/home/sridharan/server/sridharan995/");
 		for(ListingFile file : res)
 		{
 			System.out.println(file.name);

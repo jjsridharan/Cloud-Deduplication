@@ -205,7 +205,7 @@ public class Server
 		{
 			file=file.replaceAll("\n","");
 			base=base.replaceAll("\n","");
-			String path=base+RetrieveFile.stripExtension(file)+".src";			
+			String path=base+file+".src";			
 			System.out.println(path+base+file);
 			getFile(path,base+file);		
 		}

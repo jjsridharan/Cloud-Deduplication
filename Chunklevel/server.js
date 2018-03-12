@@ -306,7 +306,11 @@ app.post("/directory", function(req, res)
 		}		
 	}
 	else
-		res.cookie('cdir',req.cookies['cdir']+'/'+req.body.folder);
+	{
+		var str=req.body.folder;
+		str = str.replace(/\s*$/,"");
+		res.cookie('cdir',req.cookies['cdir']+'/'+str);
+	}
 	res.redirect('/download.html');
 });
 app.get('*', function(req, res) {

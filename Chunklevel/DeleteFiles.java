@@ -61,7 +61,7 @@ public class DeleteFiles
 		for(String filename : files)
 		{
 			filename=filename.replaceAll("\n","");
-			filename=stripExtension(filename)+".src";
+			filename=filename+".src";
 			ftpClient.deleteFile(filename);
 		}
 	}	
