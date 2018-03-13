@@ -5,7 +5,6 @@ var path=require('path');
 var cookieParser = require('cookie-parser')
 var fs = require('fs');
 var rimraf = require('rimraf');
-var JSAlert = require("js-alert");
 var app = express();
 
 app.use(cookieParser());
@@ -30,8 +29,6 @@ function mkDirByPathSync(targetDir, {isRelativeToScript = false} = {})
 		      {
 			throw err;
 		      }
-
-		      console.log(`Directory ${curDir} already exists!`);
 		}
 		return curDir;
 	}, initDir);
@@ -180,6 +177,7 @@ app.post("/api/Upload", function(req, res)
 			{
 			  	if (err instanceof Error)
 				    throw err;
+				console.log(out.toString());
 				var files=req.files;
 				for(var i=0;i<files.length;i++)
 				{
@@ -196,7 +194,6 @@ app.post("/api/Upload", function(req, res)
  
 app.post("/download", function(req, res) 
 {	
-	console.log(req.body.fname);
 	var fname=req.body.fname;
 	fname=fname.substring(fname.lastIndexOf("/")+1);
 	mkDirByPathSync(req.cookies['cdir']);
@@ -212,7 +209,17 @@ app.post("/download", function(req, res)
 				    throw err;
 	   	var file = __dirname +'/'+ req.cookies['cdir']+'/'+fname;  
    		var fileName = fname; 
-    		res.download(file, fileName);	
+    		res.download(file, fileName,function(err)
+    		{
+    			if (err instanceof Error)
+				    throw err;
+			fs.unlink(file,function(err)
+			{
+				if (err instanceof Error)
+				    throw err;
+				
+			});
+    		});	
 	});
 });
 
@@ -355,27 +362,27 @@ app.get("/showlog.html",function(req,res)
 		{
  			if (err instanceof Error)
 				throw err;
-		fs.readFile('login/'+req.cookies['uname']+'log.txt', function (err, data) 
-	 	{
-	    		if (err) throw err;
-				var out=data.toString();
-			if(out=="unable to fetch log")
-	    		{
-	    			res.write("<script> alert('Unable to fetch log');  setTimeout(function () {         window.location = '/';  }, 50)</script>");
-	   		}
-	   		else
-			{
-				res.write("<html><body>");
-			    	var out=(data.toString()).split("###");
-				var outl=out.length;
-				for(var i=0;i<outl;i++)
-	    			{	    				
-		    			res.write(out[i]+"<br/><br/>");
+			fs.readFile('login/'+req.cookies['uname']+'log.txt', function (err, data) 
+		 	{
+		    		if (err) throw err;
+					var out=data.toString();
+				if(out=="unable to fetch log")
+		    		{
+		    			res.write("<script> alert('Unable to fetch log');  setTimeout(function () {         window.location = '/';  }, 50)</script>");
 		   		}
-				res.write("<br/><br/><a href='/'>Back to Home</a></body></html>");
-			}
-	    		res.end();
-		});
+		   		else
+				{
+					res.write("<html><body>");
+				    	var out=(data.toString()).split("###");
+					var outl=out.length;
+					for(var i=outl-1;i>=0;i--)
+		    			{	    				
+			    			res.write(out[i]+"<br/><br/>");
+			   		}
+					res.write("<br/><br/><a href='/'>Back to Home</a></body></html>");
+				}
+		    		res.end();
+			});
 		});
 	}
 });

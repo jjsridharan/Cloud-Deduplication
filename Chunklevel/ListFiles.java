@@ -24,7 +24,7 @@ public class ListFiles
 		path=responsearr[3]+path+"/";
 		Upload.CheckforDirectory(server,user,pass,path);
 		CuckooHashMap<String,String> list=new CuckooHashMap<String,String>();
-		list.put("list",path);
+		list.put("TSIL###",path);
 		Gson gson=new Gson();		
 		String listsend=gson.toJson(list),result="";		
 		Socket s=new Socket(server,9999);

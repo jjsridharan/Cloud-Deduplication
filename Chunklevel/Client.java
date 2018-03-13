@@ -249,6 +249,7 @@ public class Client
 		if(args[0].equals("login"))
 		{
 			String response=Login(args[1],args[2]);
+			String responses=LogActivity(args[1],"Login Attempt");
 			if(!response.contains("Invalid Credentials"))
 			{
 				System.out.print(response);
@@ -258,9 +259,10 @@ public class Client
 		}
 		else if(args[0].equals("signup"))
 		{
-			String response=RegisterUser(args[1],args[2],args[3],args[4]);
+			String response=RegisterUser(args[1],args[2],args[3],args[4]);			
 			if(response.contains("Successfully Registered"))
 			{
+				String responses=LogActivity(args[1],"Created Account");
 				System.out.print(response);
 			}
 			else if(response.contains("username already exists"))
@@ -272,7 +274,8 @@ public class Client
 			
 		}
 		else if(args[0].equals("forgot"))
-		{			
+		{	
+			String responses=LogActivity(args[1],"Attempting Forgot Password");						
 			String response=ForgotPassword(args[1],args[2]);
 			System.out.print(response);			
 		}

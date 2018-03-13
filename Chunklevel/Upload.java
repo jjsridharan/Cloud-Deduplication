@@ -78,6 +78,7 @@ public class Upload
 	}
 	void getList(String base,List<String> files)throws Exception
 	{
+		System.out.println("Step 2 : Getting Hash values for individual chunk\n");
 		MessageDigest mesdigest;
 		InputStream fis;
 		FileWriter fw;
@@ -91,7 +92,7 @@ public class Upload
 			File file=new File(filename);
 			index = (file.getName()).lastIndexOf('.');
 			String extension=(file.getName()).substring(index+1);
-			System.out.println("Getting Hash Values for "+file.getName());		
+			System.out.println("Getting Hash Values for "+file.getName()+"\n");		
 			String metapath=file.getParent()+"/"+file.getName()+".src";
 			File metafile=new File(metapath);
 			metafile.createNewFile();
@@ -131,7 +132,7 @@ public class Upload
 		Pair<String,Integer> identity;
 		FileInputStream raf;		
 		int numbytes;
-		System.out.println("Seperating missing hash values...");
+		System.out.println("Step 5: Seperating missing hash values...\n");
 		for(String iterate : dedup)
 		{
 			identity=map.get(iterate);
@@ -157,6 +158,7 @@ public class Upload
 			raf.close();	
 		}
 		out.close();
+		System.out.println("Separated Missing Hash values");
 	}
 	public static byte[] compressstring(String str) throws IOException 
 	{
@@ -174,7 +176,8 @@ public class Upload
 	static void UploadFileList(String server,String user,String pass,String base,List<String> files)
 	{
 		try
-		{				
+		{		
+				System.out.println("Step 6 : Uploading files to server\n");		
 				int port=21;
 				FTPClient ftpClient = new FTPClient();
 				ftpClient.connect(server,port);
@@ -188,10 +191,8 @@ public class Upload
 				}
 				if(ftpClient.login(user,pass))
 				{
-					System.out.println("Successfull");
 					for(String i : files)
 					{
-						System.out.println(i+"success");
 						File file=new File(i);
 						InputStream in = new FileInputStream(file.getParent()+"/"+file.getName()+".src");
 						ftpClient.setFileType(FTP.BINARY_FILE_TYPE);		
@@ -199,7 +200,6 @@ public class Upload
 		        			boolean Store = ftpClient.storeFile(base+file.getName()+".src", in);
 						System.out.println(ftpClient.getReplyString());
 						file=new File(file.getParent()+"/"+file.getName()+".src");
-						System.out.println(file.getParent()+"/"+file.getName()+".src");
 						bytesuploaded+=file.length();
 						in.close();
 						file.delete();
@@ -221,7 +221,7 @@ public class Upload
 		}
 		catch(Exception e)
 		{
-			System.out.println(e);
+			e.printStackTrace();
 		}
 	}
 	public static List<String> addfiles(String path)throws Exception
@@ -230,18 +230,16 @@ public class Upload
 		File[] files= new File(path).listFiles();
 		for(File file :files)
 		{
-			filelist.add(file.getAbsolutePath());
-			System.out.println(file.getAbsolutePath());
+			if(!file.isDirectory())
+				filelist.add(file.getAbsolutePath());
 		}
 		return filelist;
 	}
 	public static String ReedSolomonFunc(String listsend)
-	{
-		
+	{		
 		int DATA_SHARDS = 20;
 		int PARITY_SHARDS = 4;
 		int TOTAL_SHARDS = 24;
-
 		int BYTES_IN_INT = 4;
 		int fileSize=listsend.length()+1;
 		int shardSize;
@@ -249,34 +247,27 @@ public class Upload
 		shardSize = (storedSize + DATA_SHARDS - 1) / DATA_SHARDS;
   		final int bufferSize = shardSize * DATA_SHARDS;
         	final byte [] allBytes = new byte[bufferSize];
-        	//System.out.println(allBytes.length);
 		final byte [] temp = listsend.getBytes();
-		ByteBuffer.wrap(allBytes).putInt(fileSize);
-		
+		ByteBuffer.wrap(allBytes).putInt(fileSize);		
 		for(int i=4;i<temp.length+4;i++)
-			allBytes[i]=temp[i-4];
-		
+			allBytes[i]=temp[i-4];		
 		byte [] [] shards = new byte [TOTAL_SHARDS] [shardSize];
-		for (int i = 0; i < DATA_SHARDS; i++) {
+		for (int i = 0; i < DATA_SHARDS; i++) 
+		{
             		System.arraycopy(allBytes, i * shardSize, shards[i], 0, shardSize);
         	}
-
-		//Encoder called
 		ReedSolomon reedSolomon = ReedSolomon.create(DATA_SHARDS, PARITY_SHARDS);
-        	reedSolomon.encodeParity(shards, 0, shardSize);
-		//Encoded
-		
+        	reedSolomon.encodeParity(shards, 0, shardSize);		
 		String str2="";
 		char shardNumber='a';
 		int initlen=0;
-		for (int i = 0; i < TOTAL_SHARDS; i++) {
-		str2=str2+"###"+shardNumber+"###"+DatatypeConverter.printBase64Binary(shards[i]);
-		if(initlen==0)
-			initlen=str2.length()-6;
-		//System.out.println("\n Shard Length : "+shards[i].length+" String Length : "+initlen);
-	    shardNumber++;
-		}
-	
+		for (int i = 0; i < TOTAL_SHARDS; i++)
+		{
+			str2=str2+"###"+shardNumber+"###"+DatatypeConverter.printBase64Binary(shards[i]);
+			if(initlen==0)
+				initlen=str2.length()-6;
+			shardNumber++;
+		}	
 		str2=Integer.toString(initlen)+str2;
 		return str2;
 	}
@@ -298,7 +289,6 @@ public class Upload
 			if(directoryExists)	return ;
 			CheckforDirectory(server,user,pass,base.substring(0,base.lastIndexOf("/")));
 			boolean makeDirectory = ftpClient.makeDirectory(base);
-			System.out.println(base);
 		}
 		ftpClient.logout();
 	}
@@ -327,20 +317,20 @@ public class Upload
 	{		
 		try
 		{
-			String ip,user,pass,log;			
+			String ip,user,pass,log;
+			System.out.println("\n\n\nStep 1: Waiting for connection with server...\n");			
 			String response=Client.GetServerDetails();	
 			String responsearr[]=response.split("###",0);
 			ip=responsearr[0];
 			user=responsearr[1];
 			pass=responsearr[2];
 			base=responsearr[3]+base+"/";
-			System.out.println("Inside function");
+			System.out.println("Connection established with server\n");						
 			CheckforDirectory(ip,user,pass,base);
-			System.out.println("Inside function");		
 			Upload client=new Upload();
 			client.getList(base,files);
 			Gson gson=new Gson();
-			hashlist.put("put",gson.toJson(listhashes));	
+			hashlist.put("TUP###",gson.toJson(listhashes));	
 			String listsend=gson.toJson(hashlist),duped="";		
 			Socket s=new Socket(ip,9999);  
 			DataInputStream din=new DataInputStream(s.getInputStream());  
@@ -349,14 +339,16 @@ public class Upload
 			listsend=ReedSolomonFunc(listsend);
 			dout.writeUTF(listsend);			 
 			dout.flush();
+			System.out.println("Step 3: Uploading hash values to server...\n");
 			duped=din.readUTF();
+			System.out.println("Step 4: Received missing hash values from server...\n");			
 			List<String> duplicated=gson.fromJson(duped, new TypeToken<List<String>>(){}.getType());
 			client.SeparateDedup(duplicated);
 			listsend=gson.toJson(hashoffset);
-			offsetlist.put("process",listsend);
+			offsetlist.put("SSECORP###",listsend);
 			listsend=gson.toJson(extensionlist);
-			offsetlist.put("extension",listsend);
-			offsetlist.put("base",base);
+			offsetlist.put("NOISNETXE###",listsend);
+			offsetlist.put("ESAB###",base);
 			s=new Socket(ip,9999);  
 			din=new DataInputStream(s.getInputStream());  
 			dout=new DataOutputStream(s.getOutputStream()); 
@@ -369,7 +361,7 @@ public class Upload
 			duped=din.readUTF();
 			dout.close(); 
 			s.close();			
-			System.out.println("Files Uploaded Successfully");
+			System.out.println("Files Uploaded Successfully\n");
 		}
 		catch(Exception e)
 		{
@@ -378,7 +370,6 @@ public class Upload
 	}
 	public static void main(String args[])throws Exception
 	{  
-		System.out.println(args[0]);
 		List<String> files=addfiles(args[0]);
 		UploadFiles(args[0],files);
 		String log="Uploading "+files.size()+" files to "+args[2];

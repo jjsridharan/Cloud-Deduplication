@@ -94,7 +94,6 @@ public class DownloadFiles
 			if((listfromserver.get(j)).isdirectory)
 			{
 				String subdir=folder+((listfromserver.get(j)).name).substring(((listfromserver.get(j)).name).lastIndexOf("/"));
-				System.out.println(subdir);
 				DownloadFilesRecursively(subdir,dest+subdir.substring(subdir.lastIndexOf('/')+1)+"/");
 			}
 			else
@@ -102,7 +101,6 @@ public class DownloadFiles
 				listoffiles.add(((listfromserver.get(j)).name).substring(((listfromserver.get(numfiles)).name).length()));
 			}
 		}
-		System.out.println(dest+"hello");
 		DownloadFiles("",listoffiles,dest);
 	}
 	static void DownloadDirectory(String folder,String fname)throws Exception
@@ -129,13 +127,12 @@ public class DownloadFiles
 		else
 			base=responsearr[3];
 		Upload.CheckforDirectory(server,user,pass,base);
-		System.out.println("adf");
 		Socket s=new Socket(server,9999);  
 		DataInputStream din=new DataInputStream(s.getInputStream());  
 		DataOutputStream dout=new DataOutputStream(s.getOutputStream());		
 		Gson gson=new Gson();
 		CuckooHashMap<String,String> hashlist=new CuckooHashMap<String,String>();		
-		hashlist.put("download",gson.toJson(listoffiles));
+		hashlist.put("DAOLWNOD###",gson.toJson(listoffiles));
 		hashlist.put("base",base);
 		String listsend=gson.toJson(hashlist),result;
 		listsend=ReedSolomonFunc(listsend);
