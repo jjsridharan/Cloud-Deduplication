@@ -129,15 +129,28 @@ public class Upload
 	{
 		FileOutputStream out = new FileOutputStream("sepdedupe.txt");	
 		Pair<String,Integer> identity;
-		RandomAccessFile raf;		
+		FileInputStream raf;		
 		int numbytes;
 		System.out.println("Seperating missing hash values...");
 		for(String iterate : dedup)
 		{
 			identity=map.get(iterate);
 			byte[] b=new byte[4194304];
-			raf = new RandomAccessFile(identity.getLeft(), "r");
-			raf.seek((identity.getRight()*4194304));
+			raf = new FileInputStream(identity.getLeft());
+			int pos=identity.getRight();
+			while(pos!=0)
+			{
+				if(pos>=500)
+				{
+					raf.skip(500*4194304);
+					pos-=500;
+				}
+				else
+				{
+					raf.skip(pos*4194304);
+					pos=0;
+				}
+			}
 			numbytes=raf.read(b);
 			out.write(ConvertFormat(numbytes,b));
 			hashoffset.put(iterate,pair);
