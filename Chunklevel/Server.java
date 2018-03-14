@@ -51,9 +51,15 @@ class DedupeProcess
 		return result;
 	}
 	
-	public String process(List<String> lists)
-	{		
-		return gson.toJson(findduplicates(lists));
+	public String process(List<String> lists,String path)
+	{	
+		try{
+		String duped=gson.toJson(findduplicates(lists));
+		FileWriter writer = new FileWriter(path+"missing.json");
+   		writer.write(duped);
+   		writer.close();		
+		return "Processed";
+		}catch(Exception e){return "adf";}
 	}
 }
 public class Server
@@ -346,7 +352,7 @@ public class Server
 					List<String> listofhash = gson.fromJson(reader, new TypeToken<List<String>>(){}.getType());
 					reader.close();	
 					new File(path+"put.json").delete();			
-					String result=dedupe.process(listofhash);
+					String result=dedupe.process(listofhash,path);
 					System.out.println("Found missing hash values\n\n");
 					rdout.writeUTF(result);  
 					rdout.flush();					

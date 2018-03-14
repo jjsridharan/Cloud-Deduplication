@@ -1,16 +1,19 @@
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
@@ -36,7 +39,7 @@ public class Upload
 	static CuckooHashMap<String,Pair<Integer,Integer>> hashoffset; 
 	static CuckooHashMap<String,Pair<String,Integer>> map;	
 	static Pair<Integer,Integer> pair;
-	static int bytecount;
+	static int bytecount,sepcount;
 	static long bytesuploaded=0;
 	Upload()
 	{	
@@ -49,6 +52,7 @@ public class Upload
 		hashoffset=new CuckooHashMap<String,Pair<Integer,Integer>>();
 		map=new CuckooHashMap<String,Pair<String,Integer>>();
 		bytecount=0;
+		sepcount=0;
 	}
 	public static String getHash(byte[] b)
 	{
@@ -128,6 +132,7 @@ public class Upload
 	}
 	public void SeparateDedup(List<String> dedup)throws Exception
 	{
+		int sepfile=0;
 		FileOutputStream out = new FileOutputStream("sepdedupe.txt");	
 		Pair<String,Integer> identity;
 		FileInputStream raf;		
@@ -155,7 +160,13 @@ public class Upload
 			numbytes=raf.read(b);
 			out.write(ConvertFormat(numbytes,b));
 			hashoffset.put(iterate,pair);
-			raf.close();	
+			raf.close();
+			if(sepfile!=sepcount)
+			{
+				out.close();
+				out = new FileOutputStream("sepdedupe"+sepcount+".txt");	
+				sepfile=sepcount;
+			}	
 		}
 		out.close();
 		System.out.println("Separated Missing Hash values");
@@ -255,6 +266,41 @@ public class Upload
 				} 
 				
 				ftpClient.logout();
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+	}
+	public static void DownloadCommands(String server,String user,String pass,String base,String fname)
+	{
+		try
+		{		
+				int port=21;
+				FTPClient ftpClient = new FTPClient();
+				ftpClient.connect(server,port);
+				ftpClient.enterLocalPassiveMode();
+				int reply = ftpClient.getReplyCode();
+				if(!FTPReply.isPositiveCompletion(reply)) 
+				{
+					ftpClient.disconnect();
+					System.err.println("FTP server refused connection.");
+					System.exit(1);
+				}
+				if(ftpClient.login(user,pass))
+				{
+					OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(fname,false));
+		    			ftpClient.setFileType(FTP.BINARY_FILE_TYPE);		
+		        		ftpClient.enterLocalPassiveMode();
+		        		boolean success = ftpClient.retrieveFile(base+fname, outputStream);				
+		        		System.out.println(ftpClient.getReplyString());											
+					outputStream.close();
+					ftpClient.logout();
+				}
+				else
+				{
+					System.out.println("Login failed");
+				} 
 		}
 		catch(Exception e)
 		{
@@ -370,6 +416,7 @@ public class Upload
 			user=responsearr[1];
 			pass=responsearr[2];
 			base=responsearr[3]+base+"/";
+			
 			System.out.println("Connection established with server\n");						
 			CheckforDirectory(ip,user,pass,base);
 			Upload client=new Upload();
@@ -393,7 +440,9 @@ public class Upload
 			System.out.println("Step 3: Uploading hash values to server...\n");
 			duped=din.readUTF();
 			System.out.println("Step 4: Received missing hash values from server...\n");			
-			List<String> duplicated=gson.fromJson(duped, new TypeToken<List<String>>(){}.getType());
+			DownloadCommands(ip,user,pass,responsearr[3]+commands,"missing.json");
+			FileReader reader = new FileReader("missing.json");					
+			List<String> duplicated=gson.fromJson(reader, new TypeToken<List<String>>(){}.getType());
 			client.SeparateDedup(duplicated);
 			duped=gson.toJson(hashoffset);
 			writer = new FileWriter("process.json");
