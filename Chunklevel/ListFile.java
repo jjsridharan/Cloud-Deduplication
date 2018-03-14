@@ -21,20 +21,21 @@ public class ListFile
 		{
 			try
 			{
-			if(file.isFile())
-			{
-				String filename=stripExtension(stripExtension(file.getAbsolutePath()))+"."+RetrieveAttribute.Retrieve(file.getAbsolutePath());
-				result.add(new ListingFile(filename,false));
-			}
-			else
-			{
-				if(!((file.getName()).equals("..") || (file.getName()).equals(".")))
-				result.add(new ListingFile(file.getAbsolutePath(),true));				
-			}
+				if(file.isFile())
+				{
+					String filename=stripExtension(stripExtension(file.getAbsolutePath()))+"."+RetrieveAttribute.Retrieve(file.getAbsolutePath());
+					result.add(new ListingFile(filename,false));
+				}
+				else
+				{
+					if(!((file.getName()).equals("..") || (file.getName()).equals(".")))
+					result.add(new ListingFile(file.getAbsolutePath(),true));				
+				}
 			}
 			catch(Exception ex)
 			{
-				file.delete();
+				if(!((file.getName()).equals("sepdedupe.txt")))
+					file.delete();
 			}
 		}
 		return result;
@@ -43,7 +44,7 @@ public class ListFile
 	
 	public static void main(String args[])throws Exception
 	{
-		List<ListingFile> res=ListFilesandDirectory("/home/sridharan/server/sridharan995/");
+		List<ListingFile> res=ListFilesandDirectory("/home/student/server/hl8");
 		for(ListingFile file : res)
 		{
 			System.out.println(file.name);

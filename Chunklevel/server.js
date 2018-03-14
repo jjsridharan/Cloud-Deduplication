@@ -65,8 +65,8 @@ app.get("/download.html", function(req, res)
 			indexof+=(req.cookies['cdir']).substring((req.cookies['cdir']).indexOf("/"));
 		}
 		var exec = require('child_process').execSync;
-		var child = exec('java -cp ".:commons.jar:gson-2.6.2.jar" ListFiles '+req.cookies['cdir']+'  > login/list.txt');
-		fs.readFile('login/list.txt', function (err, data) 
+		var child = exec('java -cp ".:commons.jar:gson-2.6.2.jar" ListFiles '+req.cookies['cdir']+'  > login/'+req.cookies['uname']+'list.txt');
+		fs.readFile('login/'+req.cookies['uname']+'list.txt', function (err, data) 
 	 	{
 			if (err) throw err;
 			var out=(data.toString()).split("###");
@@ -318,7 +318,7 @@ app.post("/signup", function(req, res)
 	if(req.body.upass==req.body.cupass)
 	{
 		var exec = require('child_process').exec;
-		mkDirByPathSync('signup');
+		mkDirByPathSync('login');
 		var child = exec('java -cp ".:commons.jar:gson-2.6.2.jar" Client signup '+ req.body.uname+' '+ req.body.upass+' '+req.body.uphone+' '+req.body.umail+' > login/'+req.body.uname+'signup.txt',function(err,data,code)
 		{
  			if (err instanceof Error)

@@ -174,19 +174,33 @@ public class Server
 	{
 		String dedupefile="dedupe"+map.Current_Length/1000+".txt";
 		FileOutputStream out = new FileOutputStream(dedupefile,true);
-		Pairing<Integer,Pair<Integer,Integer>> pair;
+		Pairing<Integer,Pair<Integer,Integer>> pair;		
 		for(String hashval : hashoffset.keySet())
 		{
-			RandomAccessFile raf = new RandomAccessFile(base+"sepdedupe.txt", "r");
+			FileInputStream raf = new FileInputStream(base+"sepdedupe.txt");
 			Pair<Integer,Integer> pair1=hashoffset.get(hashval);
-			raf.seek(pair1.getLeft());
+			int pos=pair1.getLeft();
+			System.out.println(pos);
+			while(pos!=0)
+			{
+				if(pos>=300*4194304)
+				{
+					raf.skip(300*4194304);
+					pos-=300*4194304;
+				}
+				else
+				{
+					raf.skip(pos);
+					pos=0;
+				}
+			}			
 			byte[] contentbuf=new byte[pair1.getRight()+1];
 			raf.read(contentbuf,0,pair1.getRight());
 			pair1=new Pair<Integer,Integer>(bytecount,pair1.getRight());
 			pair=new Pairing<Integer,Pair<Integer,Integer>>(map.Current_Length++,pair1);						
 			bytecount+=pair1.getRight()+1;
 			map.put(hashval,pair);
-			out.write(contentbuf);
+			out.write(contentbuf);			
 			raf.close();
 		}
 		out.close();
@@ -306,8 +320,23 @@ public class Server
 				dedupe=new DedupeProcess(map);
 				rdin=din;
 				rdout=dout;
-				String str2;
-				str2=rdin.readUTF(); 				
+				String str2="",value="";
+				while(rdin.available()>=0)
+				{
+					try
+					{
+						value=rdin.readUTF();
+					}
+					catch(Exception ex)
+					{
+						if(value!=null && value.length()!=0) str2=str2+value;
+						System.out.println(ex);
+					}
+					str2  = str2 + value; 
+
+					if(value==null) break;
+					if(!(value.equals(""))) break;
+				}
 				String listrec=ReedSolomon(str2);
 				if(listrec.contains("TUP###"))
 				{
