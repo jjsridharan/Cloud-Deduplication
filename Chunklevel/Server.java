@@ -341,7 +341,11 @@ public class Server
 				if(listrec.contains("TUP###"))
 				{
 					CuckooHashMap<String,String> hashlist=gson.fromJson(listrec, new TypeToken<CuckooHashMap<String,String>>(){}.getType());	
-					List<String> listofhash=gson.fromJson(hashlist.get("TUP###"), new TypeToken<List<String>>(){}.getType());
+					String path=hashlist.get("TUP###");
+					Reader reader = new FileReader(path+"put.json");
+					List<String> listofhash = gson.fromJson(reader, new TypeToken<List<String>>(){}.getType());
+					reader.close();	
+					new File(path+"put.json").delete();			
 					String result=dedupe.process(listofhash);
 					System.out.println("Found missing hash values\n\n");
 					rdout.writeUTF(result);  
@@ -370,7 +374,11 @@ public class Server
 				else if(listrec.contains("SSECORP###"))
 				{
 					CuckooHashMap<String,String> hashlist=gson.fromJson(listrec, new TypeToken<CuckooHashMap<String,String>>(){}.getType());
-					CuckooHashMap<String,Pair<Integer,Integer>> hashoffset=gson.fromJson(hashlist.get("SSECORP###"), new TypeToken<CuckooHashMap<String,Pair<Integer,Integer>>>(){}.getType());
+					String path=hashlist.get("SSECORP###");
+					Reader reader = new FileReader(path+"process.json");
+					CuckooHashMap<String,Pair<Integer,Integer>> hashoffset = gson.fromJson(reader, new TypeToken<CuckooHashMap<String,Pair<Integer,Integer>>>(){}.getType());
+					reader.close();	
+					new File(path+"process.json").delete();					
 					CuckooHashMap<String,String> extensionlist=gson.fromJson(hashlist.get("NOISNETXE###"), new TypeToken<CuckooHashMap<String,String>>(){}.getType());
 					String base=hashlist.get("ESAB###");
 					CopyExtension(extensionlist);

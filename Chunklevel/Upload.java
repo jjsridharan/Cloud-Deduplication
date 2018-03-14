@@ -224,6 +224,43 @@ public class Upload
 			e.printStackTrace();
 		}
 	}
+	public static void UploadCommands(String server,String user,String pass,String base,String fname)
+	{
+		try
+		{		
+				int port=21;
+				FTPClient ftpClient = new FTPClient();
+				ftpClient.connect(server,port);
+				ftpClient.enterLocalPassiveMode();
+				int reply = ftpClient.getReplyCode();
+				if(!FTPReply.isPositiveCompletion(reply)) 
+				{
+					ftpClient.disconnect();
+					System.err.println("FTP server refused connection.");
+					System.exit(1);
+				}
+				if(ftpClient.login(user,pass))
+				{
+					InputStream in = new FileInputStream(fname);
+					ftpClient.setFileType(FTP.BINARY_FILE_TYPE);		
+		        		ftpClient.enterLocalPassiveMode();
+		        		boolean Store = ftpClient.storeFile(base+fname,in);
+		        		System.out.println(ftpClient.getReplyString());											
+					File f=new File(fname);					
+					f.delete();
+				}
+				else
+				{
+					System.out.println("Login failed");
+				} 
+				
+				ftpClient.logout();
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+	}
 	public static List<String> addfiles(String path)throws Exception
 	{
 		List<String> filelist=new ArrayList<String>();
@@ -313,12 +350,20 @@ public class Upload
 		}
 		UploadFiles(base+directory.substring(directory.lastIndexOf("/")),listoffiles);
 	}
+	
+	public static String GetCommandsRoot(String base)
+	{
+		if(base.indexOf("/")==-1) return base;
+		return base.substring(0,base.indexOf("/"));
+		
+	}
 	public static void UploadFiles(String base,List<String> files)
 	{		
 		try
 		{
-			String ip,user,pass,log;
+			String ip,user,pass,log,commands,duped="";
 			System.out.println("\n\n\nStep 1: Waiting for connection with server...\n");			
+			commands=GetCommandsRoot(base)+"/.commands/";
 			String response=Client.GetServerDetails();	
 			String responsearr[]=response.split("###",0);
 			ip=responsearr[0];
@@ -330,8 +375,14 @@ public class Upload
 			Upload client=new Upload();
 			client.getList(base,files);
 			Gson gson=new Gson();
-			hashlist.put("TUP###",gson.toJson(listhashes));	
-			String listsend=gson.toJson(hashlist),duped="";		
+			duped=gson.toJson(listhashes);
+			FileWriter writer = new FileWriter("put.json");
+   			writer.write(duped);
+   			writer.close();
+			CheckforDirectory(ip,user,pass,responsearr[3]+commands);
+			UploadCommands(ip,user,pass,responsearr[3]+commands,"put.json");
+			hashlist.put("TUP###",responsearr[3]+commands);	
+			String listsend=gson.toJson(hashlist);		
 			Socket s=new Socket(ip,9999);  
 			DataInputStream din=new DataInputStream(s.getInputStream());  
 			DataOutputStream dout=new DataOutputStream(s.getOutputStream());  		  
@@ -344,8 +395,13 @@ public class Upload
 			System.out.println("Step 4: Received missing hash values from server...\n");			
 			List<String> duplicated=gson.fromJson(duped, new TypeToken<List<String>>(){}.getType());
 			client.SeparateDedup(duplicated);
-			listsend=gson.toJson(hashoffset);
-			offsetlist.put("SSECORP###",listsend);
+			duped=gson.toJson(hashoffset);
+			writer = new FileWriter("process.json");
+   			writer.write(duped);
+   			writer.close();
+			CheckforDirectory(ip,user,pass,responsearr[3]+commands);
+			UploadCommands(ip,user,pass,responsearr[3]+commands,"process.json");
+			offsetlist.put("SSECORP###",responsearr[3]+commands);
 			listsend=gson.toJson(extensionlist);
 			offsetlist.put("NOISNETXE###",listsend);
 			offsetlist.put("ESAB###",base);

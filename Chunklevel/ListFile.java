@@ -28,7 +28,7 @@ public class ListFile
 				}
 				else
 				{
-					if(!((file.getName()).equals("..") || (file.getName()).equals(".")))
+					if(!((file.getName()).equals("..") || (file.getName()).equals(".") || (file.getName()).charAt(0)=='.'))
 					result.add(new ListingFile(file.getAbsolutePath(),true));				
 				}
 			}
