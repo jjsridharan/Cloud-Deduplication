@@ -36,9 +36,10 @@ public class Upload
 	static List<String> fileslist,listhashes;
 	static CuckooHashMap<String,String> listofhash;
 	static CuckooHashMap<String,String> hashlist,offsetlist,extensionlist;
-	static CuckooHashMap<String,Pair<Integer,Integer>> hashoffset; 
+	static CuckooHashMap<String,Pairing<Integer,Pair<Integer,Integer>>> hashoffset; 
 	static CuckooHashMap<String,Pair<String,Integer>> map;	
 	static Pair<Integer,Integer> pair;
+	static Pairing<Integer,Pair<Integer,Integer>> pair1;
 	static int bytecount,sepcount;
 	static long bytesuploaded=0;
 	Upload()
@@ -49,7 +50,7 @@ public class Upload
 		hashlist=new CuckooHashMap<String,String>();
 		offsetlist=new CuckooHashMap<String,String>();
 		extensionlist=new CuckooHashMap<String,String>();
-		hashoffset=new CuckooHashMap<String,Pair<Integer,Integer>>();
+		hashoffset=new CuckooHashMap<String,Pairing<Integer,Pair<Integer,Integer>>>();
 		map=new CuckooHashMap<String,Pair<String,Integer>>();
 		bytecount=0;
 		sepcount=0;
@@ -77,7 +78,13 @@ public class Upload
 		String content=DatatypeConverter.printBase64Binary(cb);
 		byte[] ba=compressstring(content);
 		pair=new Pair<Integer,Integer>(bytecount,ba.length);
+		pair1= new Pairing<Integer,Pair<Integer,Integer>>(sepcount,pair);
 		bytecount+=ba.length;
+		if(bytecount>=2107483647)
+		{
+			bytecount=0;
+			sepcount++;
+		}
 		return ba;
 	}
 	void getList(String base,List<String> files)throws Exception
@@ -133,7 +140,7 @@ public class Upload
 	public void SeparateDedup(List<String> dedup)throws Exception
 	{
 		int sepfile=0;
-		FileOutputStream out = new FileOutputStream("sepdedupe.txt");	
+		FileOutputStream out = new FileOutputStream("sepdedupe"+sepcount+".txt");	
 		Pair<String,Integer> identity;
 		FileInputStream raf;		
 		int numbytes;
@@ -159,14 +166,14 @@ public class Upload
 			}
 			numbytes=raf.read(b);
 			out.write(ConvertFormat(numbytes,b));
-			hashoffset.put(iterate,pair);
+			hashoffset.put(iterate,pair1);
 			raf.close();
 			if(sepfile!=sepcount)
 			{
 				out.close();
 				out = new FileOutputStream("sepdedupe"+sepcount+".txt");	
 				sepfile=sepcount;
-			}	
+			}				
 		}
 		out.close();
 		System.out.println("Separated Missing Hash values");
@@ -215,13 +222,16 @@ public class Upload
 						in.close();
 						file.delete();
 					}
-					InputStream in = new FileInputStream("sepdedupe.txt");
-					ftpClient.setFileType(FTP.BINARY_FILE_TYPE);		
-		        		ftpClient.enterLocalPassiveMode();
-					boolean Store = ftpClient.storeFile(base+"sepdedupe.txt", in);
-					File f=new File("sepdedupe.txt");
-					bytesuploaded+=f.length();
-					f.delete();
+					for(int i=0;i<=sepcount;i++)
+					{
+						InputStream in = new FileInputStream("sepdedupe"+i+".txt");
+						ftpClient.setFileType(FTP.BINARY_FILE_TYPE);		
+		        			ftpClient.enterLocalPassiveMode();
+						boolean Store = ftpClient.storeFile(base+"sepdedupe"+i+".txt", in);
+						File f=new File("sepdedupe"+i+".txt");
+						bytesuploaded+=f.length();
+						f.delete();
+					}
 				}
 				else
 				{
@@ -416,7 +426,6 @@ public class Upload
 			user=responsearr[1];
 			pass=responsearr[2];
 			base=responsearr[3]+base+"/";
-			
 			System.out.println("Connection established with server\n");						
 			CheckforDirectory(ip,user,pass,base);
 			Upload client=new Upload();

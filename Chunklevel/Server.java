@@ -176,16 +176,21 @@ public class Server
 		CopyAttributes.copy(mfile,fileo);
 	}
 	
-	static synchronized void Copynewvalues(String base,CuckooHashMap<String,Pair<Integer,Integer>> hashoffset)throws Exception
+	static synchronized void Copynewvalues(String base,CuckooHashMap<String,Pairing<Integer,Pair<Integer,Integer>>> hashoffset)throws Exception
 	{
-		String dedupefile="dedupe"+map.Current_Length/1000+".txt";
-		FileOutputStream out = new FileOutputStream(dedupefile,true);
-		Pairing<Integer,Pair<Integer,Integer>> pair;		
+		int dedupefile=map.Current_Length/1000;
+		FileOutputStream out = new FileOutputStream("dedupe"+map.Current_Length/1000+".txt",true);
+		Pairing<Integer,Pair<Integer,Integer>> pair;
+		Pair<Integer,Integer> pair2;
+		int maxsep=0;		
 		for(String hashval : hashoffset.keySet())
 		{
-			FileInputStream raf = new FileInputStream(base+"sepdedupe.txt");
-			Pair<Integer,Integer> pair1=hashoffset.get(hashval);
+			Pairing<Integer,Pair<Integer,Integer>> pair1=hashoffset.get(hashval);
 			int pos=pair1.getLeft();
+			if(pos>maxsep) maxsep=pos;
+			pair2=pair1.getRight();
+			FileInputStream raf = new FileInputStream(base+"sepdedupe"+pos+".txt");
+			pos=pair2.getLeft();
 			System.out.println(pos);
 			while(pos!=0)
 			{
@@ -200,18 +205,28 @@ public class Server
 					pos=0;
 				}
 			}			
-			byte[] contentbuf=new byte[pair1.getRight()+1];
-			raf.read(contentbuf,0,pair1.getRight());
-			pair1=new Pair<Integer,Integer>(bytecount,pair1.getRight());
-			pair=new Pairing<Integer,Pair<Integer,Integer>>(map.Current_Length++,pair1);						
-			bytecount+=pair1.getRight()+1;
+			byte[] contentbuf=new byte[pair2.getRight()+1];
+			raf.read(contentbuf,0,pair2.getRight());
+			pair2=new Pair<Integer,Integer>(bytecount,pair2.getRight());
+			pair=new Pairing<Integer,Pair<Integer,Integer>>(map.Current_Length++,pair2);						
+			bytecount+=pair2.getRight()+1;
 			map.put(hashval,pair);
 			out.write(contentbuf);			
 			raf.close();
+			if(dedupefile!=map.Current_Length/1000)
+			{
+				dedupefile=map.Current_Length/1000;
+				out.close();
+				out = new FileOutputStream("dedupe"+map.Current_Length/1000+".txt",true);
+				bytecount=0;			
+			}
 		}
 		out.close();
-		File f=new File(base+"sepdedupe.txt");
-		f.delete();
+		for(int i=0;i<=maxsep;i++)
+		{
+			File f=new File(base+"sepdedupe"+i+".txt");
+			f.delete();
+		}
 	}
 	
 	static void CopyExtension(CuckooHashMap<String,String> extensionlist)throws Exception
@@ -382,7 +397,7 @@ public class Server
 					CuckooHashMap<String,String> hashlist=gson.fromJson(listrec, new TypeToken<CuckooHashMap<String,String>>(){}.getType());
 					String path=hashlist.get("SSECORP###");
 					Reader reader = new FileReader(path+"process.json");
-					CuckooHashMap<String,Pair<Integer,Integer>> hashoffset = gson.fromJson(reader, new TypeToken<CuckooHashMap<String,Pair<Integer,Integer>>>(){}.getType());
+					CuckooHashMap<String,Pairing<Integer,Pair<Integer,Integer>>> hashoffset = gson.fromJson(reader, new TypeToken<CuckooHashMap<String,Pairing<Integer,Pair<Integer,Integer>>>>(){}.getType());
 					reader.close();	
 					new File(path+"process.json").delete();					
 					CuckooHashMap<String,String> extensionlist=gson.fromJson(hashlist.get("NOISNETXE###"), new TypeToken<CuckooHashMap<String,String>>(){}.getType());
