@@ -153,7 +153,7 @@ public class Server
 					Pairing<Integer,Pair<Integer,Integer>> pair=map.get(str);
 					String position = String.valueOf(pair.getLeft());
 					long pos = (long)(Double.parseDouble(position));
-					String defile="dedupe" + pos/1000 + ".txt";
+					String defile="dedupe" + pos/500 + ".txt";
 					RandomAccessFile raf = new RandomAccessFile(defile, "r");
 					Pair<Integer,Integer> pair1=pair.getRight();
 					raf.seek(pair1.getLeft());
@@ -178,8 +178,8 @@ public class Server
 	
 	static synchronized void Copynewvalues(String base,CuckooHashMap<String,Pairing<Integer,Pair<Integer,Integer>>> hashoffset)throws Exception
 	{
-		int dedupefile=map.Current_Length/1000;
-		FileOutputStream out = new FileOutputStream("dedupe"+map.Current_Length/1000+".txt",true);
+		int dedupefile=map.Current_Length/500;
+		FileOutputStream out = new FileOutputStream("dedupe"+map.Current_Length/500+".txt",true);
 		Pairing<Integer,Pair<Integer,Integer>> pair;
 		Pair<Integer,Integer> pair2;
 		int maxsep=0;		
@@ -191,7 +191,6 @@ public class Server
 			pair2=pair1.getRight();
 			FileInputStream raf = new FileInputStream(base+"sepdedupe"+pos+".txt");
 			pos=pair2.getLeft();
-			System.out.println(pos);
 			while(pos!=0)
 			{
 				if(pos>=300*4194304)
@@ -213,11 +212,12 @@ public class Server
 			map.put(hashval,pair);
 			out.write(contentbuf);			
 			raf.close();
-			if(dedupefile!=map.Current_Length/1000)
+			if(bytecount<=0) System.out.println("Negative offset");
+			if(dedupefile!=map.Current_Length/500)
 			{
-				dedupefile=map.Current_Length/1000;
+				dedupefile=map.Current_Length/500;
 				out.close();
-				out = new FileOutputStream("dedupe"+map.Current_Length/1000+".txt",true);
+				out = new FileOutputStream("dedupe"+map.Current_Length/500+".txt",true);
 				bytecount=0;			
 			}
 		}

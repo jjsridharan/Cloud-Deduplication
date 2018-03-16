@@ -27,7 +27,7 @@ function mkDirByPathSync(targetDir, {isRelativeToScript = false} = {})
 		{
 		      if (err.code !== 'EEXIST') 
 		      {
-			throw err;
+			console.log(err);
 		      }
 		}
 		return curDir;
@@ -64,11 +64,11 @@ app.get("/download.html", function(req, res)
 		{
 			indexof+=(req.cookies['cdir']).substring((req.cookies['cdir']).indexOf("/"));
 		}
-		var exec = require('child_process').execSync;
-		var child = exec('java -cp ".:commons.jar:gson-2.6.2.jar" ListFiles '+req.cookies['cdir']+'  > login/'+req.cookies['uname']+'list.txt');
+		var exec = require('child_process').exec;
+		var child = exec('java -cp ".:commons.jar:gson-2.6.2.jar" ListFiles '+req.cookies['cdir']+'  > login/'+req.cookies['uname']+'list.txt',function(err,data,code){
 		fs.readFile('login/'+req.cookies['uname']+'list.txt', function (err, data) 
 	 	{
-			if (err) throw err;
+			if (err) console.log(err);
 			var out=(data.toString()).split("###");
 			var outl=out.length;			
 	    		res.write("<html><head><link href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css' rel='stylesheet'/><script src='https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js'></script> <script>    $(document).ready(function()  {  $('button').on('click',function()  	{  	var val=$(this).val();   	var con=val.split('###');if(con[1]=='true')  	{  	document.getElementById('dname').value=con[0];   	$('#dir').submit();  	}   	else  	{  	document.getElementById('fname').value=con[0];  	$('#down').submit();  	  	}  	});  });  </script>  </head>  <body>  <form id='down'action= '/download' method='post'><input type='text' id='fname' name='fname' hidden/></form><form action='/directory' method='post' id='dir'><input type='text' name='folder' id='dname' hidden/></form><strong>Index Of "+indexof+"</strong><br/><br/>");
@@ -82,6 +82,7 @@ app.get("/download.html", function(req, res)
 	    		res.write("<br/><br/><strong>Upload Files</strong><br/><br/><form id='frmUploader' enctype='multipart/form-data' action='api/Upload/' method='post'><input type='file' name='imgUploader' multiple required/><input type='submit' name='submit' id='btnSubmit' value='Upload' /> </form><br/><br/><br/><a href='delete.html'>Delete Files</a><br/><br/><br/><a href='logout'>Logout</a></body></html>");
 	    		res.end();
 		});	
+		});
 	}	
  });
  
@@ -100,7 +101,7 @@ app.get("/download.html", function(req, res)
 		var child = exec('java -cp ".:commons.jar:gson-2.6.2.jar" ListFiles '+req.cookies['cdir']+'  > login/list.txt');
 		fs.readFile('login/list.txt', function (err, data) 
 	 	{
-			if (err) throw err;
+			if (err) console.log(err);
 			var out=(data.toString()).split("###");
 			var outl=out.length;
 			var indexof=req.cookies['uname'];
@@ -176,14 +177,14 @@ app.post("/api/Upload", function(req, res)
 			function(err, out, code) 
 			{
 			  	if (err instanceof Error)
-				    throw err;
+				    console.log(err);
 				console.log(out.toString());
 				var files=req.files;
 				for(var i=0;i<files.length;i++)
 				{
 					console.log(req.cookies['cdir']+"/"+files[i].originalname);
 					fs.unlink(req.cookies['cdir']+"/"+files[i].originalname,function(err){ if (err instanceof Error)
-				    throw err;});
+				    console.log(err);});
 				}
 			});
 			res.write("<script> alert('Files Uploaded Successfully');  setTimeout(function () {         window.location = '/download.html';  }, 50)</script>");
@@ -206,17 +207,19 @@ app.post("/download", function(req, res)
 	var child = exec('java -cp ".:commons.jar:gson-2.6.2.jar" DownloadFiles '+req.cookies['cdir']+' "'+fname+'" '+req.cookies['uname']+' '+indexof,function(err,data,code)
 	{   	
 		if (err instanceof Error)
-				    throw err;
+				    console.log(err);
 	   	var file = __dirname +'/'+ req.cookies['cdir']+'/'+fname;  
    		var fileName = fname; 
     		res.download(file, fileName,function(err)
     		{
     			if (err instanceof Error)
-				    throw err;
+			{
+			    console.log(err);
+			}
 			fs.unlink(file,function(err)
 			{
 				if (err instanceof Error)
-				    throw err;
+				    console.log(err);
 				
 			});
     		});	
@@ -238,7 +241,7 @@ app.post("/delete", function(req, res)
 	var child = exec('java -cp ".:commons.jar:gson-2.6.2.jar" DeleteFiles "'+req.cookies['cdir']+'/'+fname+'" '+req.cookies['uname']+' '+indexof,function(err,data,out)   	
    	{
 		 if (err instanceof Error)
-				    throw err;
+				    console.log(err);
 		res.write("<script> alert('File Deleted Successfully');  setTimeout(function () {         window.location = '/delete.html';  }, 500)</script>");	
    		res.end();
 	}
@@ -252,10 +255,10 @@ app.post("/login", function(req, res)
 	var child = exec('java -cp ".:commons.jar:gson-2.6.2.jar" Client login '+ req.body.uname+' '+ req.body.upass+' > login/'+req.body.uname+'.txt',function(err,data,code)
 	{
 		if (err instanceof Error)
-				    throw err;
+				    console.log(err);
 		fs.readFile('login/'+req.body.uname+'.txt', function (err, data) 
 	 	{
-	    		if (err) throw err;
+	    		if (err) console.log(err);
 				var out=data.toString();
 			if(!(out=="0"))
 	    		{
@@ -279,16 +282,16 @@ app.post("/forgot", function(req, res)
      		res.redirect("/index.html");
      	else
 	{
-		var exec = require('child_process').execSync;
+		var exec = require('child_process').exec;
 		mkDirByPathSync('login');
 		var child = exec('java -cp ".:commons.jar:gson-2.6.2.jar" Client forgot '+ req.body.uname+' '+ req.body.umobile+' > login/'+req.body.uname+'forgot.txt',function(err,data,code)
 		{
  			if (err instanceof Error)
-				throw err;
+				console.log(err);
 
 		fs.readFile('login/'+req.body.uname+'forgot.txt', function (err, data) 
 	 	{
-	    		if (err) throw err;
+	    		if (err) console.log(err);
 				var out=data.toString();
 			if(out=="Invalid Credentials")
 	    		{
@@ -322,10 +325,10 @@ app.post("/signup", function(req, res)
 		var child = exec('java -cp ".:commons.jar:gson-2.6.2.jar" Client signup '+ req.body.uname+' '+ req.body.upass+' '+req.body.uphone+' '+req.body.umail+' > login/'+req.body.uname+'signup.txt',function(err,data,code)
 		{
  			if (err instanceof Error)
-				throw err;
+				console.log(err);
 			fs.readFile('login/'+req.body.uname+'signup.txt', function (err, data) 
 		 	{
-		    		if (err) throw err;
+		    		if (err) console.log(err);
 				var out=data.toString();
 				if(out=="Successfully Registered")
 		    		{
@@ -361,10 +364,10 @@ app.get("/showlog.html",function(req,res)
 		var child = exec('java -cp ".:commons.jar:gson-2.6.2.jar" Client showlog '+ req.cookies['uname']+' > login/'+req.cookies['uname']+'log.txt',function(err,data,code)
 		{
  			if (err instanceof Error)
-				throw err;
+				console.log(err);
 			fs.readFile('login/'+req.cookies['uname']+'log.txt', function (err, data) 
 		 	{
-		    		if (err) throw err;
+		    		if (err) console.log(err);
 					var out=data.toString();
 				if(out=="unable to fetch log")
 		    		{
@@ -409,9 +412,10 @@ app.get('*', function(req, res) {
     res.redirect('/');
 });
 
- app.listen(2000, function(a) {
+ var server=app.listen(2000, function(a) {
 
      console.log("Listening to port 2000");
 
  });
+server.timeout=1000000000;
 

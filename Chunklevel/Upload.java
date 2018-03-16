@@ -452,6 +452,8 @@ public class Upload
 			DownloadCommands(ip,user,pass,responsearr[3]+commands,"missing.json");
 			FileReader reader = new FileReader("missing.json");					
 			List<String> duplicated=gson.fromJson(reader, new TypeToken<List<String>>(){}.getType());
+			reader.close();
+			new File("missing.json");
 			client.SeparateDedup(duplicated);
 			duped=gson.toJson(hashoffset);
 			writer = new FileWriter("process.json");
