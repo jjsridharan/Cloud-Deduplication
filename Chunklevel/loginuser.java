@@ -67,9 +67,40 @@ public class loginuser{
 			}
         	}
         	});
+
+
+
+
+		
+		
+		final JTextField phone2=new JTextField();
+		phone2.setBounds(150,230,490,30);
+		p1.add(phone2);
+		
+
+		
+
+		final JButton fp1=new JButton("Forgot Password");
+		fp1.setBounds(140,140,200,30);
+		p1.add(fp1);
+		fp1.addActionListener(new ActionListener()
+		{
+    		@Override
+    		public void actionPerformed(ActionEvent e)
+    		{
+			String arg[]=new String[0];
+			fp forgetpass=new fp();
+			fp.main(arg);
+        	}
+        	});
+
+
+
+
+
         	
 		jf.add(p1);
-		jf.setSize(500,300);
+		jf.setSize(400,200);
 		jf.setVisible(true);
 		jf.setLocationRelativeTo(null);
 	}
