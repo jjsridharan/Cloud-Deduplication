@@ -116,7 +116,7 @@ public class MainUI
 						}
 						String log="Uploading "+listOfFiles[folder].getAbsolutePath()+" to "+indexof;
 						System.out.println(Client.LogActivity(username,log));
-						Upload.UploadDirectory(dirname,listOfFiles[folder].getAbsolutePath());
+						Upload.UploadDirectory(dirname,listOfFiles[folder].getAbsolutePath(),true);
 						System.out.println(listOfFiles[folder].getAbsolutePath());
 					}
 					catch(Exception ex)
@@ -657,7 +657,7 @@ static ActionListener listener2=new ActionListener()
 					{
 						public void run() 
 						{
-							Upload.UploadFiles(dirname,choosedfiles);
+							Upload.UploadFiles(dirname,choosedfiles,true);
 						}
 					}).start();
 					Filllist(choosertitle);
