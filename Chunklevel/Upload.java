@@ -89,7 +89,7 @@ public class Upload
 	}
 	void getList(String base,List<String> files)throws Exception
 	{
-		System.out.println("Step 2 : Getting Hash values for individual chunk\n");
+		MainUI.setTextLabel("Step 2 : Getting Hash values for individual chunk\n");
 		MessageDigest mesdigest;
 		InputStream fis;
 		FileWriter fw;
@@ -103,7 +103,7 @@ public class Upload
 			File file=new File(filename);
 			index = (file.getName()).lastIndexOf('.');
 			String extension=(file.getName()).substring(index+1);
-			System.out.println("Getting Hash Values for "+file.getName()+"\n");		
+			MainUI.setTextLabel("Getting Hash Values for "+file.getName()+"\n");		
 			String metapath=file.getParent()+"/"+file.getName()+".src";
 			File metafile=new File(metapath);
 			metafile.createNewFile();
@@ -144,7 +144,7 @@ public class Upload
 		Pair<String,Integer> identity;
 		FileInputStream raf;		
 		int numbytes;
-		System.out.println("Step 5: Seperating missing hash values...\n");
+		MainUI.setTextLabel("Step 5: Seperating missing hash values...\n");
 		for(String iterate : dedup)
 		{
 			identity=map.get(iterate);
@@ -176,7 +176,7 @@ public class Upload
 			}				
 		}
 		out.close();
-		System.out.println("Separated Missing Hash values");
+		MainUI.setTextLabel("Separated Missing Hash values");
 	}
 	public static byte[] compressstring(String str) throws IOException 
 	{
@@ -195,7 +195,7 @@ public class Upload
 	{
 		try
 		{		
-				System.out.println("Step 6 : Uploading files to server\n");		
+				MainUI.setTextLabel("Step 6 : Uploading files to server\n");		
 				int port=21;
 				FTPClient ftpClient = new FTPClient();
 				ftpClient.connect(server,port);
@@ -216,7 +216,7 @@ public class Upload
 						ftpClient.setFileType(FTP.BINARY_FILE_TYPE);		
 		        			ftpClient.enterLocalPassiveMode();
 		        			boolean Store = ftpClient.storeFile(base+file.getName()+".src", in);
-						System.out.println(ftpClient.getReplyString());
+						MainUI.setTextLabel(ftpClient.getReplyString());
 						file=new File(file.getParent()+"/"+file.getName()+".src");
 						bytesuploaded+=file.length();
 						in.close();
@@ -235,7 +235,7 @@ public class Upload
 				}
 				else
 				{
-					System.out.println("Login failed");
+					MainUI.setTextLabel("Login failed");
 				} 
 				
 				ftpClient.logout();
@@ -266,13 +266,13 @@ public class Upload
 					ftpClient.setFileType(FTP.BINARY_FILE_TYPE);		
 		        		ftpClient.enterLocalPassiveMode();
 		        		boolean Store = ftpClient.storeFile(base+fname,in);
-		        		System.out.println(ftpClient.getReplyString());											
+		        		MainUI.setTextLabel(ftpClient.getReplyString());											
 					File f=new File(fname);					
 					f.delete();
 				}
 				else
 				{
-					System.out.println("Login failed");
+					MainUI.setTextLabel("Login failed");
 				} 
 				
 				ftpClient.logout();
@@ -303,13 +303,13 @@ public class Upload
 		    			ftpClient.setFileType(FTP.BINARY_FILE_TYPE);		
 		        		ftpClient.enterLocalPassiveMode();
 		        		boolean success = ftpClient.retrieveFile(base+fname, outputStream);				
-		        		System.out.println(ftpClient.getReplyString());											
+		        		MainUI.setTextLabel(ftpClient.getReplyString());											
 					outputStream.close();
 					ftpClient.logout();
 				}
 				else
 				{
-					System.out.println("Login failed");
+					MainUI.setTextLabel("Login failed");
 				} 
 		}
 		catch(Exception e)
@@ -418,7 +418,7 @@ public class Upload
 		try
 		{
 			String ip,user,pass,log,commands,duped="";
-			System.out.println("\n\n\nStep 1: Waiting for connection with server...\n");			
+			MainUI.setTextLabel("\n\n\nStep 1: Waiting for connection with server...\n");			
 			commands=GetCommandsRoot(base)+"/.commands/";
 			String response=Client.GetServerDetails();	
 			String responsearr[]=response.split("###",0);
@@ -426,7 +426,7 @@ public class Upload
 			user=responsearr[1];
 			pass=responsearr[2];
 			base=responsearr[3]+base+"/";
-			System.out.println("Connection established with server\n");						
+			MainUI.setTextLabel("Connection established with server\n");						
 			CheckforDirectory(ip,user,pass,base);
 			Upload client=new Upload();
 			client.getList(base,files);
@@ -446,9 +446,9 @@ public class Upload
 			listsend=ReedSolomonFunc(listsend);
 			dout.writeUTF(listsend);			 
 			dout.flush();
-			System.out.println("Step 3: Uploading hash values to server...\n");
+			MainUI.setTextLabel("Step 3: Uploading hash values to server...\n");
 			duped=din.readUTF();
-			System.out.println("Step 4: Received missing hash values from server...\n");			
+			MainUI.setTextLabel("Step 4: Received missing hash values from server...\n");			
 			DownloadCommands(ip,user,pass,responsearr[3]+commands,"missing.json");
 			FileReader reader = new FileReader("missing.json");					
 			List<String> duplicated=gson.fromJson(reader, new TypeToken<List<String>>(){}.getType());
@@ -477,7 +477,7 @@ public class Upload
 			duped=din.readUTF();
 			dout.close(); 
 			s.close();			
-			System.out.println("Files Uploaded Successfully\n");
+			MainUI.setTextLabel("Files Uploaded Successfully\n");
 		}
 		catch(Exception e)
 		{

@@ -105,8 +105,8 @@ public class Client
 			response.append(inputLine);
 		}
 		in.close();
-
-		if(!(response.toString().contains("Error")))
+		System.out.println(response);
+			if(!(response.toString().contains("Error")))
 		{
 			return response.toString();
 		}

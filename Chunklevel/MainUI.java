@@ -39,6 +39,8 @@ public class MainUI
 	static JSplitPane splitPane3;
 	static JTextField tf=new JTextField();
 	static JButton jb=new JButton("Create Folder");
+	static JFrame f2= new JFrame();  
+        static JTextArea area2;  
 
      static class RTButton extends JButton
 	{
@@ -221,7 +223,6 @@ static ActionListener listener2=new ActionListener()
 			button3[j].setBorderPainted(false);
 			button3[j].setHorizontalAlignment(SwingConstants.CENTER);
 		}		
-		System.out.println("Hi");
 		jf.revalidate();
 	}
 
@@ -320,7 +321,10 @@ static ActionListener listener2=new ActionListener()
 			}
         	}
     	};
-
+	public static void setTextLabel(String text)
+	{
+		area2.append(text);
+	}
 	static void Filllist(String path)
 	{
 		System.out.println(path);
@@ -386,7 +390,6 @@ static ActionListener listener2=new ActionListener()
 			button1[j].setBorderPainted(false);
 			button1[j].setHorizontalAlignment(SwingConstants.CENTER);
 		}		
-		System.out.println("Hi");
 		jf.revalidate();
 	}
 	static void Filllistfromserver()
@@ -445,7 +448,6 @@ static ActionListener listener2=new ActionListener()
 			button1[j].setBorderPainted(false);
 			button1[j].setHorizontalAlignment(SwingConstants.CENTER);
 		}		
-		System.out.println("Hi");
 		jf.revalidate();
 	}
 	
@@ -491,9 +493,8 @@ static ActionListener listener2=new ActionListener()
 		splitPane2.setDividerLocation(500);
 		jf.add(splitPane2);
 		upload.add(up);	
-
-
-
+		f2.setSize(500,500);  
+		f2.setLayout(null);
 		class MenuActionListener implements ActionListener 
 		{
 			public void actionPerformed(ActionEvent e) 
@@ -619,7 +620,6 @@ static ActionListener listener2=new ActionListener()
         			System.out.println("Directory " + listOfFiles[i].getName());
     		}
 		upload.add(up);
-		
 		up.addActionListener( new ActionListener()
 		{
     		@Override
@@ -627,7 +627,7 @@ static ActionListener listener2=new ActionListener()
     		{
 			try
 			{
-				List<String> choosedfiles=new ArrayList<String>();
+				final List<String> choosedfiles=new ArrayList<String>();
 				if(currentmenu==0)
 				{
 					for(int i=0;i<numfiles;i++)
@@ -645,10 +645,24 @@ static ActionListener listener2=new ActionListener()
 					}
 					String log="Uploading "+choosedfiles.size()+" files to "+indexof;
 					System.out.println(Client.LogActivity(username,log));
-					Upload.UploadFiles(dirname,choosedfiles);
+					area2=new JTextArea("Status of Uploaded Files");	
+					area2.setBounds(10,30, 400 ,400);
+					area2.setEditable(false);
+					JScrollPane scroll = new JScrollPane (area2,JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+                JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+					scroll.setBounds(10,30, 400 ,400);
+					f2.add(scroll);
+					f2.setVisible(true);     
+					new Thread(new Runnable() 
+					{
+						public void run() 
+						{
+							Upload.UploadFiles(dirname,choosedfiles);
+						}
+					}).start();
 					Filllist(choosertitle);
-              			listfromserver=ListFiles.ListFilesandDirectory(dirname);
-					Filllist2();					
+              				listfromserver=ListFiles.ListFilesandDirectory(dirname);
+					Filllist2();			
 				}
 				else if(currentmenu==1)
 				{
