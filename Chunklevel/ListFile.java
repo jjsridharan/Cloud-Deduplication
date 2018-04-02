@@ -23,7 +23,11 @@ public class ListFile
 			{
 				if(file.isFile())
 				{
-					String filename=stripExtension(stripExtension(file.getAbsolutePath()))+"."+RetrieveAttribute.Retrieve(file.getAbsolutePath());
+					String filename;
+					String extension=RetrieveAttribute.Retrieve(file.getAbsolutePath());
+					filename=stripExtension(file.getAbsolutePath());
+					if(filename.lastIndexOf(".")!=-1)	
+						filename=stripExtension(filename)+"."+extension;
 					result.add(new ListingFile(filename,false));
 				}
 				else

@@ -103,7 +103,9 @@ public class Upload
 		{
 			File file=new File(filename);
 			index = (file.getName()).lastIndexOf('.');
-			String extension=(file.getName()).substring(index+1);
+			String extension="";
+			if(index!=-1)
+			extension=(file.getName()).substring(index+1);
 			if(out)
 			MainUI.setTextLabel("Getting Hash Values for "+file.getName()+"\n");		
 			String metapath=file.getParent()+"/"+file.getName()+".src";
