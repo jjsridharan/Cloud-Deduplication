@@ -2,6 +2,8 @@
 
 Project to achieve de-duplication at file level to save more space.
 
+To know about completely : https://www.researchgate.net/publication/327161977_Data_De-duplication_Using_Cuckoo_Hashing_in_Cloud_Storage 
+
 This is a cloud project where you can upload your files to the server and 
 the files are stored in a higher compression rate. The de-duplication algorithm
 used is so advanced that it provides quicker upload of user data from 
